@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Flits">
+<meta name="theme-color" content="#0f1420">
+<title>Flits</title>
+<meta name="description" content="Leer al je schoolvakken met je eigen flashcards, spelletjes en oefentoetsen.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#0f1420;--card:#182033;--card2:#1f2a42;--line:#2b3754;--text:#eef2fb;--muted:#9aa6c2;--accent:#4f8cff;--good:#2ecc71;--bad:#ff5d5d;--warn:#ffc145;--paper:#f7f8fc;--ink:#1b2235}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.45;overflow-x:hidden}
+#app{max-width:640px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+h1{font-size:28px;margin:4px 0;letter-spacing:-.5px}
+h2{font-size:19px;margin:22px 0 10px}
+h3{font-size:17px;margin:0 0 4px}
+p{margin:0 0 10px}
+.muted{color:var(--muted);font-size:14px}
+.center{text-align:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+.row{display:flex;gap:10px;align-items:center}
+.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+.stat b{display:block;font-size:24px}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:14px 16px;font-size:16px;font-weight:700;color:#fff;background:var(--accent);cursor:pointer;text-align:center;margin-top:8px;font-family:inherit}
+.btn.alt{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.btn.red{background:rgba(255,93,93,.15);color:#ff9b9b;border:1px solid rgba(255,93,93,.35)}
+.btn.small{width:auto;display:inline-block;padding:8px 12px;font-size:14px;margin:0}
+.btn:disabled{opacity:.4}
+.vakgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vak{border-radius:18px;padding:14px;cursor:pointer;min-height:112px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;position:relative;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.vak .e{font-size:30px}
+.vak small{opacity:.85;font-size:13px}
+.vak .due{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.28);border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700}
+.vak.add{background:var(--card);border:2px dashed var(--line);color:var(--muted);align-items:center;justify-content:center;text-align:center;box-shadow:none}
+.item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;cursor:pointer}
+.item .ico{font-size:26px;width:42px;height:42px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;flex:none}
+.item .grow{flex:1;min-width:0}
+.bar{height:7px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--good)}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--card2);color:var(--muted);margin-right:4px}
+.tag.due{background:rgba(255,193,69,.18);color:#ffd57a}
+.tag.blue{background:rgba(79,140,255,.18);color:#9cc0ff}
+.tag.green{background:rgba(46,204,113,.18);color:#7ee6a8}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.x{background:none;border:0;color:var(--muted);font-size:15px;cursor:pointer;padding:6px 0;font-family:inherit}
+.grp{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:14px 0 6px;font-weight:700}
+.modes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.mode{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px 4px;text-align:center;cursor:pointer;color:var(--text);font-family:inherit;font-size:13px;font-weight:700}
+.mode span{display:block;font-size:26px;margin-bottom:2px}
+.mode:disabled{opacity:.35}
+.seg{display:flex;background:var(--card2);border-radius:12px;padding:4px;margin:6px 0 10px}
+.seg button{flex:1;border:0;background:none;color:var(--muted);padding:8px 2px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
+.seg button.on{background:var(--accent);color:#fff}
+.seg button:disabled{opacity:.35}
+label{font-size:14px;color:var(--muted);font-weight:600}
+.kaart{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.kaart:last-child{border-bottom:0}
+.kaart .f{flex:1;font-weight:600}
+.kaart .b{flex:1;color:var(--muted)}
+.kaart button{background:none;border:0;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px}
+input,textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:16px;font-family:inherit;margin:4px 0 10px}
+textarea{min-height:150px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+select{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:16px;margin:4px 0 10px;font-family:inherit}
+.pbar{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.pbar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+.sheet .in{background:var(--bg);width:100%;max-width:640px;max-height:90vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom));border-top:1px solid var(--line);animation:up .28s cubic-bezier(.2,1.2,.4,1)}
+@keyframes fade{from{opacity:0}}@keyframes up{from{transform:translateY(60px)}}
+.picks{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
+.picks button{width:44px;height:44px;border-radius:12px;border:2px solid transparent;background:var(--card2);font-size:22px;cursor:pointer}
+.picks button.on{border-color:#fff}
+.big{font-size:56px;font-weight:800;line-height:1;margin:6px 0}
+.opt{display:block;width:100%;text-align:left;background:var(--card2);color:var(--text);border:2px solid var(--line);border-radius:14px;padding:13px 14px;font-size:16px;margin-bottom:9px;cursor:pointer;font-family:inherit}
+.opt.good{border-color:var(--good);background:rgba(46,204,113,.12)}
+.opt.bad{border-color:var(--bad);background:rgba(255,93,93,.12)}
+.fb{border-radius:14px;padding:14px;margin-top:6px}
+.fb.good{background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.4)}
+.fb.bad{background:rgba(255,93,93,.10);border:1px solid rgba(255,93,93,.4)}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:18px;text-align:center;padding:28px 16px;margin:12px 0}
+.qcard .w{font-size:24px;font-weight:700;white-space:pre-wrap;word-break:break-word}
+.tipbox{background:rgba(255,193,69,.10);border:1px solid rgba(255,193,69,.35);border-radius:14px;padding:12px;margin-bottom:12px;font-size:15px}
+
+/* ===== echte flashcard ===== */
+.stage{position:relative;margin:10px 0 14px}
+.flip{perspective:1400px;cursor:pointer;touch-action:pan-y;position:relative;will-change:transform}
+.flip .in{position:relative;height:300px;transition:transform .8s cubic-bezier(.3,1.5,.5,1);transform-style:preserve-3d}
+.flip.on .in{transform:rotateY(180deg)}
+.flip.lift{animation:lift .8s ease}
+@keyframes lift{0%{transform:scale(1)}35%{transform:scale(1.08) translateY(-14px)}100%{transform:scale(1)}}
+.flip.wiggle{animation:shake .4s}
+.flip.enter{animation:enter .5s cubic-bezier(.2,1.35,.5,1)}
+@keyframes enter{from{transform:translateY(60px) scale(.85) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
+.flip.fly-r{transition:transform .38s ease-in,opacity .38s!important;transform:translateX(140%) rotate(22deg)!important;opacity:0}
+.flip.fly-l{transition:transform .38s ease-in,opacity .38s!important;transform:translateX(-140%) rotate(-22deg)!important;opacity:0}
+.flip.fly-u{transition:transform .38s ease-in,opacity .38s!important;transform:translateY(-130%) scale(.9)!important;opacity:0}
+.side{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px 22px 22px;text-align:center;box-shadow:0 18px 40px rgba(0,0,0,.45);overflow:hidden}
+.side .w{font-size:27px;font-weight:800;word-break:break-word;white-space:pre-wrap;line-height:1.25}
+.side .lbl{position:absolute;top:14px;left:18px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;opacity:.7}
+.side .hint{position:absolute;bottom:14px;font-size:13px;opacity:.75}
+.front{color:#fff}
+.front::before{content:"";position:absolute;inset:10px;border:2px solid rgba(255,255,255,.18);border-radius:18px;pointer-events:none}
+.back{background:var(--paper);color:var(--ink);transform:rotateY(180deg);background-image:repeating-linear-gradient(transparent 0 31px,rgba(79,140,255,.12) 31px 32px)}
+.back .lbl{color:#7b859c}
+#mine{margin-top:12px;width:100%}
+#mine .mlbl{font-size:12px;font-weight:700;color:#7b859c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+#mine img{max-height:86px;max-width:100%;background:#1f2a42;border-radius:10px}
+#mine .mt{font-weight:700;font-size:17px}
+.stamp{position:absolute;top:24px;z-index:3;font-weight:900;font-size:22px;padding:6px 14px;border-radius:12px;border:3px solid;opacity:0;pointer-events:none;transform:rotate(-12deg)}
+.stamp.ok{left:20px;color:#22a35a;border-color:#22a35a;background:rgba(255,255,255,.9)}
+.stamp.no{right:20px;color:#d64545;border-color:#d64545;background:rgba(255,255,255,.9);transform:rotate(12deg)}
+.padwrap{position:relative}
+.cardtxt{background:transparent;border:0;color:inherit;font-size:24px;font-weight:800;text-align:center;resize:none;width:100%;height:110px;outline:none;font-family:inherit;padding:0;margin:0;line-height:1.25}
+.front .cardtxt::placeholder{color:rgba(255,255,255,.6)}
+.back .cardtxt::placeholder{color:#9aa3b8}
+.flip.on .front{pointer-events:none}.flip:not(.on) .back{pointer-events:none}
+.cimg{max-width:80%;max-height:110px;border-radius:12px;margin-bottom:10px;object-fit:contain;background:#fff}
+.qimg{max-width:100%;max-height:150px;border-radius:12px;margin-bottom:8px}
+.thumb{width:40px;height:40px;object-fit:cover;border-radius:8px;flex:none}
+.toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#22a35a;color:#fff;font-weight:700;padding:10px 18px;border-radius:99px;z-index:30;animation:toast 1.6s forwards}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,20px)}15%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.hero{background:linear-gradient(135deg,#4f8cff,#7c5cff);border:0;color:#fff}
+.hero .muted{color:#e2e8ff}
+#pad{width:100%;height:150px;background:var(--card2);border:1px dashed var(--line);border-radius:14px;touch-action:none;display:block}
+.padclear{position:absolute;top:6px;right:10px}
+.padph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);pointer-events:none;font-size:15px}
+.grades{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.grades button{border:0;border-radius:14px;padding:13px 4px;font-size:15px;font-weight:700;cursor:pointer;color:#fff;font-family:inherit}
+.g0{background:#d64545}.g1{background:#d19a1f}.g2{background:#22a35a}
+
+/* ===== spelletjes ===== */
+.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.tile{min-height:84px;background:var(--card);border:2px solid var(--line);border-radius:14px;color:var(--text);font-size:14px;font-weight:600;padding:8px;cursor:pointer;font-family:inherit;word-break:break-word;transition:opacity .3s,transform .3s}
+.tile.sel{border-color:var(--accent);background:rgba(79,140,255,.15);transform:scale(1.04)}
+.tile.wrong{border-color:var(--bad);background:rgba(255,93,93,.15);animation:shake .4s}
+.tile.gone{opacity:0;transform:scale(.6);pointer-events:none}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.memgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.mem{perspective:800px;height:96px;cursor:pointer}
+.mem .in{position:relative;height:100%;transition:transform .55s cubic-bezier(.3,1.4,.5,1);transform-style:preserve-3d}
+.mem.up .in{transform:rotateY(180deg)}
+.mf,.mb{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:14px;display:flex;align-items:center;justify-content:center;padding:6px;font-size:13px;font-weight:700;text-align:center;word-break:break-word}
+.mf{background:linear-gradient(145deg,#4f8cff,#7c5cff);font-size:30px;color:#fff;box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.mb{background:var(--paper);color:var(--ink);transform:rotateY(180deg)}
+.mem.done .mb{background:#c9f2da;animation:pop .4s}
+@keyframes pop{50%{transform:rotateY(180deg) scale(1.1)}}
+.tfbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tfbtns button{border:0;border-radius:16px;padding:20px 6px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;font-family:inherit}
+.flash-good{animation:fg .5s}.flash-bad{animation:fbd .5s}
+@keyframes fg{30%{box-shadow:0 0 0 4px var(--good)}}@keyframes fbd{30%{box-shadow:0 0 0 4px var(--bad)}}
+.slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.slot{width:36px;height:44px;border-radius:10px;background:var(--card2);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;cursor:pointer}
+.slot.f{border-color:var(--accent);background:rgba(79,140,255,.15)}
+.slot.sp{background:none;border:0;width:14px}
+.letters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px}
+.letter{width:44px;height:48px;border-radius:12px;background:var(--paper);color:var(--ink);font-size:21px;font-weight:800;border:0;cursor:pointer;box-shadow:0 4px 0 #b8bfd3;font-family:inherit}
+.letter:active{transform:translateY(3px);box-shadow:0 1px 0 #b8bfd3}
+.letter.used{visibility:hidden}
+.timer{height:10px;background:var(--card2);border-radius:99px;overflow:hidden;margin:6px 0 4px}
+.timer i{display:block;height:100%;background:linear-gradient(90deg,var(--good),var(--warn),var(--bad));transition:width .2s linear}
+.para{display:flex;gap:10px;margin-bottom:12px}
+.para .nr{flex:none;width:24px;height:24px;border-radius:8px;background:var(--card2);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+details.learn{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;padding:0 16px}
+details.learn summary{list-style:none;cursor:pointer;padding:15px 0;font-weight:700;display:flex;justify-content:space-between}
+details.learn summary::-webkit-details-marker{display:none}
+details.learn summary::after{content:"＋";color:var(--muted)}
+details.learn[open] summary::after{content:"－"}
+details.learn .body{padding-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0 10px}
+td,th{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+ul,ol{padding-left:20px;margin:0 0 10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheet"></div>
+<script>
+/* ===== instellingen ===== */
+const ICONS=["📘","📗","📕","🇳🇱","🇬🇧","🇫🇷","🇩🇪","🇪🇸","📐","➗","🌍","🏛️","🧬","⚗️","🔭","💶","💻","🎨","🎵","⚽","✝️","📜","🧠","🏺"];
+const COLORS=["#4f8cff","#7c5cff","#e05297","#ff7a45","#e6a817","#22a35a","#13a8a8","#5b6b8c","#c0392b"];
+const INT=[0,1,2,4,7,14,30];
+const COUNTS=[5,10,15,20,0]; // 0 = alle
+
+/* ===== vakken (leeg, je maakt zelf de kaarten) ===== */
+const STARTER=[
+{name:"Nederlands",ico:"🇳🇱",color:"#ff7a45",lezen:true},
+{name:"Engels",ico:"🇬🇧",color:"#4f8cff"},
+{name:"Frans",ico:"🇫🇷",color:"#e05297"},
+{name:"Duits",ico:"🇩🇪",color:"#e6a817"},
+{name:"Spaans",ico:"🇪🇸",color:"#c0392b"},
+{name:"Geschiedenis",ico:"🏛️",color:"#a0522d"},
+{name:"Aardrijkskunde",ico:"🌍",color:"#22a35a"},
+{name:"Biologie",ico:"🧬",color:"#13a8a8"},
+{name:"Wiskunde",ico:"📐",color:"#7c5cff"},
+{name:"Nask",ico:"⚗️",color:"#5b6b8c"},
+{name:"Economie",ico:"💶",color:"#16a085"}
+];
+
+/* ===== begrijpend lezen (Nederlands) ===== */
+const SKILLS={
+  hoofd:{n:"Hoofdgedachte",i:"🎯",tip:"Kijk vooral naar de inleiding en het slot. Welke zin vat de héle tekst samen? Een antwoord dat maar over één alinea gaat, is te smal."},
+  doel:{n:"Tekstdoel",i:"🧭",tip:"Vraag jezelf af: wat wil de schrijver dat ik ná het lezen weet, vind, doe of voel? Weten = informeren, vinden = overtuigen, doen = activeren, voelen/genieten = amuseren."},
+  signaal:{n:"Signaalwoorden",i:"🔗",tip:"Vervang het signaalwoord door een ander woord uit dezelfde groep. Klopt de zin nog? Dan heb je het goede verband."},
+  verwijs:{n:"Verwijswoorden",i:"👉",tip:"Zet jouw antwoord op de plek van het verwijswoord en lees de zin opnieuw. Klopt de zin? Dan heb je het goed. Meestal verwijst het woord naar iets dat er vlak vóór staat."},
+  woord:{n:"Woordbetekenis",i:"📖",tip:"Lees de zinnen vóór en na het woord. Vaak legt de tekst het woord zelf uit, bijvoorbeeld na een dubbele punt of met ‘dat wil zeggen’."},
+  feit:{n:"Feit of mening",i:"⚖️",tip:"Een feit kun je controleren (opzoeken, meten). Een mening is wat iemand ergens van vindt. Let op woorden als ‘vind ik’, ‘beste’, ‘mooi’, ‘moeten’."},
+  structuur:{n:"Tekstopbouw",i:"🧱",tip:"Kijk naar wat elke alinea doet: een vraag stellen, een oorzaak geven, een tegenargument noemen, een stap uitleggen... Signaalwoorden verraden vaak de functie."},
+  detail:{n:"Informatie zoeken",i:"🔍",tip:"Scan de tekst op het sleutelwoord uit de vraag (een getal, naam of begrip). Lees dan de zin eromheen nauwkeurig."},
+  afleiden:{n:"Afleiden",i:"🧠",tip:"Het antwoord staat er niet letterlijk. Combineer wat er staat met logisch nadenken. Kies het antwoord dat je met de tekst kunt onderbouwen, niet je eigen mening."}
+};
+
+/* ============ TEKSTEN ============ */
+const TEXTS=[
+{id:"slaap",title:"Waarom je brein slaap nodig heeft",soort:"Uiteenzettend",ico:"😴",niveau:"Klas 1–2",
+paras:[
+"Je kent het vast: je ligt om middernacht nog op je telefoon te scrollen en de volgende ochtend kom je bijna je bed niet uit. Veel tieners slapen te weinig. Onderzoekers raden jongeren tussen de 12 en 18 jaar aan om elke nacht 8 tot 10 uur te slapen. Toch haalt een groot deel van de scholieren dat niet. Waarom is slaap eigenlijk zo belangrijk?",
+"Tijdens je slaap is je brein allesbehalve lui. Het ordent wat je overdag hebt geleerd. Nieuwe informatie wordt van je kortetermijngeheugen naar je langetermijngeheugen verplaatst. Daardoor onthoud je stof voor een toets beter als je na het leren goed slaapt. Wie de hele nacht doorleert, gooit dus eigenlijk een deel van zijn werk weg.",
+"Ook je lichaam herstelt ’s nachts. Spieren groeien, wondjes genezen en je afweersysteem wordt sterker. Sporters die structureel te weinig slapen, raken bovendien vaker geblesseerd.",
+"Waarom vallen tieners dan zo laat in slaap? Dat komt deels door hun biologische klok. In de puberteit maakt het lichaam het slaaphormoon melatonine later op de avond aan. Daarnaast remt het licht van schermen de aanmaak van melatonine. Het gevolg is dat je pas laat moe wordt, terwijl school gewoon om half negen begint.",
+"Kortom: slaap is geen tijdverspilling, maar onderhoud voor je brein en je lichaam. Wie een uur voor het slapengaan zijn telefoon weglegt, geeft zichzelf een betere kans op een goede nachtrust."],
+qs:[
+{s:"hoofd",q:"Wat is de hoofdgedachte van deze tekst?",o:["Slaap is belangrijk, omdat je brein en lichaam zich dan ordenen en herstellen.","Tieners zitten ’s avonds te veel op hun telefoon.","Scholen zouden later op de dag moeten beginnen.","Sporters hebben meer slaap nodig dan andere mensen."],a:0,u:"De vraag in alinea 1 (‘Waarom is slaap zo belangrijk?’) wordt in de hele tekst beantwoord, en alinea 5 vat het samen: slaap is onderhoud voor brein en lichaam. De andere antwoorden gaan maar over een klein stukje van de tekst."},
+{s:"doel",q:"Wat is het belangrijkste doel van de schrijver?",o:["Informeren","Overtuigen","Amuseren","Activeren"],a:0,u:"De tekst legt vooral uit hoe slaap werkt. Aan het eind staat wel een tip (telefoon wegleggen), maar dat is een klein deel. Het hoofddoel is informeren."},
+{s:"signaal",q:"‘Daardoor onthoud je stof voor een toets beter…’ (alinea 2). Welk verband geeft ‘daardoor’ aan?",o:["Oorzaak en gevolg","Tegenstelling","Opsomming","Voorbeeld"],a:0,u:"De oorzaak is dat je brein informatie verplaatst naar je langetermijngeheugen; het gevolg is dat je de stof beter onthoudt. ‘Daardoor’ = oorzaak-gevolg."},
+{s:"verwijs",q:"‘Dat komt deels door hun biologische klok.’ (alinea 4). Waar verwijst ‘Dat’ naar?",o:["Dat tieners zo laat in slaap vallen","Dat school om half negen begint","Dat schermen licht geven","Dat melatonine een hormoon is"],a:0,u:"Vul het in: ‘Dat tieners zo laat in slaap vallen, komt deels door hun biologische klok.’ Die zin klopt. ‘Dat’ verwijst naar de vraag die er vlak vóór staat."},
+{s:"detail",q:"Hoeveel uur slaap per nacht raden onderzoekers jongeren van 12 tot 18 jaar aan?",o:["8 tot 10 uur","6 tot 8 uur","Precies 9 uur","10 tot 12 uur"],a:0,u:"Dit staat letterlijk in alinea 1. Scan bij zo’n vraag naar getallen in de tekst."},
+{s:"afleiden",q:"Wat is volgens de tekst de slimste aanpak de avond voor een toets?",o:["Leren en daarna op tijd gaan slapen","De hele nacht doorleren","Tot laat herhalen op je telefoon","Pas ’s ochtends vroeg beginnen met leren"],a:0,u:"Alinea 2 zegt dat je beter onthoudt als je na het leren goed slaapt, en dat doorleren een deel van je werk weggooit. Dat staat niet letterlijk als ‘slimste aanpak’, maar je kunt het afleiden."}
+]},
+{id:"telefoon",title:"Telefoons uit de klas: eindelijk!",soort:"Betogend",ico:"📵",niveau:"Klas 1–2",
+paras:[
+"Sinds januari 2024 zijn mobiele telefoons op de meeste middelbare scholen in Nederland niet meer welkom in de klas. Veel leerlingen mopperen erover. Ik vind het verbod juist een van de beste beslissingen van de afgelopen jaren.",
+"In de eerste plaats kun je je zonder telefoon veel beter concentreren. Elke trilling of melding haalt je uit je werk, ook als je hem niet eens oppakt. Uit verschillende onderzoeken blijkt dat leerlingen zich beter kunnen concentreren als hun telefoon niet in de buurt is.",
+"Bovendien wordt de pauze weer gezellig. Vroeger zat iedereen in de aula naar een schermpje te staren. Nu wordt er weer gepraat, gelachen en zelfs gevoetbald op het plein.",
+"Tegenstanders zeggen dat een telefoon handig is om tijdens de les iets op te zoeken. Dat is waar, maar daarvoor heeft school laptops. Die zijn ook nog eens veel beter geschikt om op te werken.",
+"Kortom, het telefoonverbod maakt school rustiger, gezelliger en leerzamer. Wat mij betreft blijft het voor altijd."],
+qs:[
+{s:"doel",q:"Wat is het doel van deze tekst?",o:["Overtuigen","Informeren","Amuseren","Activeren"],a:0,u:"De schrijver geeft zijn mening (‘Ik vind het verbod juist een van de beste beslissingen’) en onderbouwt die met argumenten. Dat is een betoog: het doel is overtuigen."},
+{s:"hoofd",q:"Wat is het standpunt van de schrijver?",o:["Het telefoonverbod in de klas is goed en moet blijven.","Leerlingen moeten in de pauze meer voetballen.","Laptops zijn beter dan telefoons.","Scholen moeten telefoons in de pauze ook verbieden."],a:0,u:"Het standpunt staat in alinea 1 en wordt herhaald in alinea 5. In een betoog vind je het standpunt bijna altijd in de inleiding en het slot."},
+{s:"feit",q:"Welke zin is een feit?",o:["Sinds januari 2024 zijn telefoons op de meeste middelbare scholen niet meer welkom in de klas.","Het verbod is een van de beste beslissingen van de afgelopen jaren.","Nu wordt de pauze weer gezellig.","Laptops zijn veel beter geschikt om op te werken."],a:0,u:"Of er sinds 2024 een verbod geldt, kun je controleren. De andere zinnen zijn meningen: ‘beste’, ‘gezellig’ en ‘beter geschikt’ zijn oordelen."},
+{s:"signaal",q:"Alinea 3 begint met ‘Bovendien’. Welk verband geeft dit woord aan?",o:["Opsomming","Tegenstelling","Conclusie","Oorzaak"],a:0,u:"‘Bovendien’ voegt nog een argument toe aan het argument uit alinea 2. Het hoort bij de groep opsomming, net als ‘ook’, ‘daarnaast’ en ‘verder’."},
+{s:"structuur",q:"Wat doet de schrijver in alinea 4?",o:["Hij noemt een tegenargument en weerlegt het.","Hij geeft een nieuw argument voor het verbod.","Hij trekt een conclusie.","Hij geeft een voorbeeld bij alinea 3."],a:0,u:"‘Tegenstanders zeggen…’ is een tegenargument. Met ‘Dat is waar, maar…’ ontkracht de schrijver het: dat heet weerleggen."},
+{s:"verwijs",q:"‘Die zijn ook nog eens veel beter geschikt…’ (alinea 4). Waar verwijst ‘Die’ naar?",o:["Laptops","Tegenstanders","Telefoons","Lessen"],a:0,u:"Vul in: ‘Laptops zijn ook nog eens veel beter geschikt om op te werken.’ Dat klopt. Het verwijswoord slaat terug op het woord vlak ervoor."}
+]},
+{id:"kunstgras",title:"Kunstgras of echt gras?",soort:"Beschouwend",ico:"⚽",niveau:"Klas 2",
+paras:[
+"Op veel amateurvoetbalclubs in Nederland ligt tegenwoordig kunstgras. Waar je vroeger na een regenbui tot je enkels in de modder stond, kun je nu het hele jaar door trainen. Toch is er discussie: is kunstgras eigenlijk wel zo’n goed idee?",
+"Voorstanders wijzen op het gemak. Een natuurgrasveld kan maar een beperkt aantal uren per week bespeeld worden, anders gaat het kapot. Een kunstgrasveld kan veel meer uren aan. Voor clubs met veel teams is dat een groot voordeel.",
+"Daar staat tegenover dat kunstgras nadelen heeft voor het milieu. Lange tijd werden er rubberkorrels van oude autobanden tussen de sprieten gestrooid. Die korrels belanden in de natuur en kunnen schadelijke stoffen bevatten. Steeds meer clubs kiezen daarom voor korrels van kurk of kokos, of voor velden zonder korrels.",
+"Ook over blessures zijn de meningen verdeeld. Sommige spelers klagen over schaafwonden na een sliding. Onderzoek laat echter geen groot verschil zien in het aantal ernstige blessures op kunstgras en op echt gras.",
+"Er is dus niet één juiste keuze. Een club moet afwegen wat zwaarder weegt: het gemak van veel kunnen trainen of de nadelen voor het milieu."],
+qs:[
+{s:"doel",q:"Wat voor tekst is dit?",o:["Beschouwend: de schrijver bekijkt verschillende kanten van een onderwerp.","Betogend: de schrijver wil je overtuigen van zijn mening.","Verhalend: de schrijver vertelt een verhaal.","Instructief: de schrijver legt uit hoe je iets doet."],a:0,u:"De schrijver noemt voordelen én nadelen en kiest geen kant (‘Er is dus niet één juiste keuze’). Dat maakt het een beschouwing."},
+{s:"hoofd",q:"Wat is de hoofdgedachte?",o:["Kunstgras heeft voor- en nadelen; een club moet zelf afwegen wat belangrijker is.","Kunstgras is slecht voor het milieu.","Op kunstgras krijg je meer blessures.","Alle clubs moeten overstappen op korrels van kurk."],a:0,u:"Het slot (alinea 5) vat de tekst samen. De andere antwoorden noemen maar één kant, of kloppen niet met de tekst."},
+{s:"signaal",q:"Alinea 3 begint met ‘Daar staat tegenover’. Welk verband geeft dit aan?",o:["Tegenstelling","Opsomming","Voorbeeld","Tijd"],a:0,u:"Na de voordelen (alinea 2) komen de nadelen. ‘Daar staat tegenover’ geeft een tegenstelling aan, net als ‘maar’ en ‘echter’."},
+{s:"verwijs",q:"‘Voor clubs met veel teams is dat een groot voordeel.’ (alinea 2). Waar verwijst ‘dat’ naar?",o:["Dat een kunstgrasveld veel meer uren aankan","Dat natuurgras kapotgaat","Dat clubs veel teams hebben","Dat er discussie is over kunstgras"],a:0,u:"Dat kunstgras veel meer uren aankan, is het voordeel voor clubs met veel teams. Vul het in en lees de zin: die klopt."},
+{s:"afleiden",q:"Waarom kiezen steeds meer clubs voor korrels van kurk of kokos?",o:["Omdat rubberkorrels in de natuur belanden en schadelijke stoffen kunnen bevatten","Omdat kurk goedkoper is dan rubber","Omdat spelers op kurk minder schaafwonden krijgen","Omdat de KNVB dat verplicht"],a:0,u:"Let op het woord ‘daarom’ in alinea 3: het verwijst terug naar de reden in de zinnen ervoor. De andere antwoorden staan niet in de tekst."},
+{s:"woord",q:"‘Een club moet afwegen wat zwaarder weegt.’ Wat betekent ‘afwegen’ hier?",o:["Voor- en nadelen met elkaar vergelijken om een keuze te maken","Iets op een weegschaal leggen","Iets afwijzen","Een besluit uitstellen"],a:0,u:"Uit de zin blijkt dat de club twee dingen tegenover elkaar zet (gemak en milieu). Afwegen = vergelijken om te kiezen."}
+]},
+{id:"bij",title:"Hoe een bij de weg vindt",soort:"Uiteenzettend",ico:"🐝",niveau:"Klas 1–2",
+paras:[
+"Een honingbij kan kilometers van haar kast wegvliegen om bloemen te zoeken, en toch vindt ze altijd de weg terug. Hoe doet zo’n klein diertje dat zonder kaart of telefoon?",
+"Het belangrijkste hulpmiddel van de bij is de zon. Bijen gebruiken de stand van de zon als een soort kompas. Omdat de zon in de loop van de dag verschuift, houdt de bij daar rekening mee met een ingebouwde klok. Zelfs als het bewolkt is, kan ze de zon ‘zien’: haar ogen nemen gepolariseerd licht waar, een patroon in het licht dat mensen niet kunnen zien.",
+"Daarnaast onthoudt een bij herkenningspunten in het landschap, zoals een boom, een sloot of een huis. Op die manier maakt ze in haar hoofd een soort kaart van de omgeving.",
+"Het bijzonderste is misschien wel hoe bijen elkaar de weg wijzen. Een bij die een goede bloemenplek heeft gevonden, voert in de kast een kwispeldans uit. De richting van de dans vertelt de andere bijen in welke richting ze moeten vliegen ten opzichte van de zon. Hoe langer de dans duurt, hoe verder weg het voedsel ligt.",
+"Wetenschappers bestuderen deze slimme navigatie nog steeds. Ze hopen er onder meer van te leren voor het bouwen van kleine robots die zelfstandig hun weg kunnen vinden."],
+qs:[
+{s:"structuur",q:"Welke opbouw heeft deze tekst?",o:["Vraag – antwoord","Voordelen – nadelen","Standpunt – argumenten","Chronologisch (tijdsvolgorde)"],a:0,u:"Alinea 1 stelt een vraag (‘Hoe doet zo’n klein diertje dat?’) en de alinea’s daarna geven het antwoord. Dat is de opbouw vraag-antwoord."},
+{s:"hoofd",q:"Wat is de hoofdgedachte?",o:["Bijen vinden de weg met de zon en herkenningspunten, en wijzen elkaar de weg met een dans.","Bijen kunnen kilometers ver vliegen.","Wetenschappers bouwen robots die op bijen lijken.","Bijen kunnen licht zien dat mensen niet zien."],a:0,u:"Het goede antwoord vat alinea 2, 3 én 4 samen. De andere antwoorden gaan maar over één detail."},
+{s:"signaal",q:"Alinea 3 begint met ‘Daarnaast’. Welk verband is dit?",o:["Opsomming","Tegenstelling","Oorzaak","Conclusie"],a:0,u:"Na de zon (hulpmiddel 1) komt een tweede hulpmiddel: herkenningspunten. ‘Daarnaast’ = opsomming."},
+{s:"woord",q:"Wat is volgens de tekst ‘gepolariseerd licht’?",o:["Een patroon in het licht dat mensen niet kunnen zien","Licht dat alleen bij bewolking ontstaat","Het licht van de ondergaande zon","Licht dat bijen zelf maken"],a:0,u:"De uitleg staat direct ná het woord, achter de komma. Let bij moeilijke woorden altijd op zo’n uitleg in de tekst zelf."},
+{s:"verwijs",q:"‘…houdt de bij daar rekening mee met een ingebouwde klok.’ (alinea 2). Waar verwijst ‘daar’ naar?",o:["Dat de zon in de loop van de dag verschuift","De kast van de bij","Het kompas","De bewolking"],a:0,u:"De bij houdt rekening met het verschuiven van de zon. ‘Daar…mee’ verwijst naar het deel van de zin vlak ervoor."},
+{s:"detail",q:"Wat vertelt de lengte van de kwispeldans aan andere bijen?",o:["Hoe ver weg het voedsel ligt","In welke richting ze moeten vliegen","Hoeveel bloemen er zijn","Hoe laat het is"],a:0,u:"‘Hoe langer de dans duurt, hoe verder weg het voedsel ligt’ (alinea 4). Let op: de richting wordt door de richting van de dans verteld, niet door de lengte."}
+]},
+{id:"strafschop",title:"De strafschop",soort:"Verhalend",ico:"🥅",niveau:"Klas 1–2",
+paras:[
+"Nog twee minuten. Daan voelde zijn hart in zijn keel kloppen. Het stond 1-1 en de scheidsrechter had net naar de stip gewezen. Iedereen keek naar hem. Hij was tenslotte de aanvoerder.",
+"Hij legde de bal neer en deed vier stappen terug. Vorige week had hij precies zo’n penalty gemist, hoog over de lat. De hele terugweg in de auto had hij niets gezegd. Zijn vader had alleen even een hand op zijn schouder gelegd.",
+"‘Kies een hoek en twijfel niet,’ had zijn trainer na die wedstrijd gezegd. Daan keek naar de keeper, die heen en weer sprong op zijn lijn alsof hij op hete kolen stond.",
+"Links onder, dacht Daan. Niet nadenken. Hij haalde diep adem, nam zijn aanloop en schoot.",
+"Even was het stil. Toen hoorde hij het geluid van de bal tegen het net, en een seconde later sprongen zijn teamgenoten boven op hem. Onder de stapel lachende jongens dacht Daan maar aan één ding: hij had niet getwijfeld."],
+qs:[
+{s:"doel",q:"Wat is het doel van deze tekst?",o:["Amuseren (de lezer laten genieten van een verhaal)","Informeren","Overtuigen","Activeren"],a:0,u:"Het is een verhaal met een hoofdpersoon, spanning en een afloop. Verhalen hebben meestal als doel amuseren/ontspannen."},
+{s:"structuur",q:"Vanuit wie wordt het verhaal verteld?",o:["Vanuit Daan, in de hij-vorm","Vanuit Daan, in de ik-vorm","Vanuit de keeper","Vanuit de vader van Daan"],a:0,u:"We lezen wat Daan denkt en voelt (‘Links onder, dacht Daan’), maar er staat ‘hij’ en niet ‘ik’. Dat is een hij-verteller vanuit Daan."},
+{s:"structuur",q:"In welke alinea gaat het (deels) over iets wat eerder is gebeurd?",o:["Alinea 2","Alinea 1","Alinea 4","Alinea 5"],a:0,u:"In alinea 2 denkt Daan terug aan de gemiste penalty van vorige week. Zo’n terugblik heet een flashback."},
+{s:"woord",q:"De keeper sprong ‘alsof hij op hete kolen stond’. Wat betekent dat?",o:["Hij was heel onrustig en bewoog steeds.","Het was erg warm op het veld.","Hij had pijn aan zijn voeten.","Hij was heel zeker van zichzelf."],a:0,u:"Dit is beeldspraak (een vergelijking). Op hete kolen kun je niet stilstaan, dus de keeper bleef bewegen: hij was onrustig."},
+{s:"afleiden",q:"Waarom legde de vader in alinea 2 een hand op Daans schouder?",o:["Om hem te troosten na de gemiste penalty","Omdat hij boos op Daan was","Om hem te zeggen dat hij moest stoppen","Omdat hij wilde dat Daan iets zei"],a:0,u:"Daan was stil en teleurgesteld na de misser. Een hand op de schouder is een troostend gebaar. Dat staat er niet letterlijk, je leidt het af."},
+{s:"hoofd",q:"Wat is de boodschap van het verhaal?",o:["Als je vertrouwt op je keuze en niet twijfelt, kun je een angst overwinnen.","Aanvoerders moeten altijd de penalty’s nemen.","Je moet altijd links onder schieten.","Keepers zijn zenuwachtiger dan spelers."],a:0,u:"De zin van de trainer (‘twijfel niet’) komt terug in de laatste zin: ‘hij had niet getwijfeld’. Dát is waar het verhaal om draait."}
+]},
+{id:"samenvatting",title:"Zo maak je een goede samenvatting",soort:"Instructief",ico:"📝",niveau:"Klas 1",
+paras:[
+"Een goede samenvatting helpt je enorm bij het leren voor een toets. Maar hoe maak je er een? Volg deze vier stappen.",
+"Stap 1: Lees de tekst eerst één keer helemaal door, zonder iets op te schrijven. Zo krijg je een idee waar het over gaat.",
+"Stap 2: Lees de tekst daarna per alinea opnieuw. Zoek in elke alinea de kernzin: de zin die het belangrijkste van die alinea zegt. Vaak is dat de eerste of de laatste zin.",
+"Stap 3: Schrijf de kernzinnen in je eigen woorden op. Laat voorbeelden, details en herhalingen weg. Een samenvatting is meestal hooguit een derde zo lang als de oorspronkelijke tekst.",
+"Stap 4: Controleer tot slot of iemand die de tekst niet kent jouw samenvatting begrijpt. Lees hem hardop voor aan een huisgenoot, of lees hem de volgende dag nog eens."],
+qs:[
+{s:"doel",q:"Wat is het doel van deze tekst?",o:["Activeren (de lezer iets laten doen)","Amuseren","Overtuigen","Informeren over de geschiedenis van samenvattingen"],a:0,u:"De tekst geeft stappen die jij moet uitvoeren. Een instructie wil dat je iets gaat doen: activeren."},
+{s:"structuur",q:"Welke opbouw heeft deze tekst?",o:["Een stappenplan (vaste volgorde)","Voordelen – nadelen","Standpunt – argumenten","Vraag – antwoord – conclusie"],a:0,u:"De tekst is opgebouwd uit stap 1 tot en met 4 in een vaste volgorde. Dat is een stappenplan."},
+{s:"woord",q:"Wat is een kernzin?",o:["De zin die het belangrijkste van een alinea zegt","De langste zin van een alinea","De eerste zin van een tekst","Een zin met een moeilijk woord"],a:0,u:"De uitleg staat in alinea 3, direct na de dubbele punt. Let op: de kernzin is vaak, maar niet altijd, de eerste zin."},
+{s:"detail",q:"Hoe lang is een samenvatting volgens de tekst meestal?",o:["Hooguit een derde van de oorspronkelijke tekst","De helft van de oorspronkelijke tekst","Precies één alinea","Even lang als de oorspronkelijke tekst"],a:0,u:"Dit staat in alinea 3 (stap 3)."},
+{s:"detail",q:"Wat laat je volgens stap 3 weg?",o:["Voorbeelden, details en herhalingen","De kernzinnen","De moeilijke woorden","De inleiding en het slot"],a:0,u:"Letterlijk uit alinea 4. Kernzinnen houd je juist."},
+{s:"signaal",q:"‘Controleer tot slot…’ (stap 4). Welk verband geeft ‘tot slot’ aan?",o:["Tijd / volgorde","Tegenstelling","Oorzaak","Vergelijking"],a:0,u:"‘Tot slot’ geeft aan dat dit de laatste stap is. Het hoort bij tijd/volgorde, net als ‘eerst’, ‘daarna’ en ‘vervolgens’."}
+]},
+{id:"kleding",title:"Koop minder nieuwe kleding",soort:"Betogend",ico:"👕",niveau:"Klas 2–3",
+paras:[
+"Een T-shirt voor vijf euro, een broek voor tien: kleding is nog nooit zo goedkoop geweest. Maar die lage prijs heeft een verborgen prijskaartje. Daarom vind ik dat we veel minder nieuwe kleding moeten kopen.",
+"Ten eerste is de kledingindustrie slecht voor het milieu. Voor het maken van één katoenen T-shirt zijn duizenden liters water nodig. Daarnaast belandt een groot deel van alle kleding binnen een paar jaar bij het afval.",
+"Ten tweede worden de mensen die onze kleding maken vaak slecht betaald. In landen als Bangladesh werken naaisters lange dagen voor een loon waar ze nauwelijks van kunnen leven.",
+"Natuurlijk is het leuk om af en toe iets nieuws te hebben. Maar dat kan ook tweedehands. In kringloopwinkels en via apps vind je prima kleding voor weinig geld. Zo ziet je kledingkast er toch nieuw uit, zonder dat het milieu of iemand anders daarvoor betaalt.",
+"Dus voordat je de volgende keer iets in je winkelmandje legt: vraag jezelf af of je het echt nodig hebt."],
+qs:[
+{s:"hoofd",q:"Wat is het standpunt van de schrijver?",o:["We moeten veel minder nieuwe kleding kopen.","Kleding is te duur geworden.","Kringloopwinkels moeten goedkoper worden.","Kleding uit Bangladesh moet verboden worden."],a:0,u:"Het standpunt staat in alinea 1, na ‘Daarom vind ik dat…’. Woorden als ‘vind ik’ verraden vaak het standpunt."},
+{s:"signaal",q:"‘Daarom vind ik dat we veel minder nieuwe kleding moeten kopen.’ Welk verband geeft ‘daarom’ hier aan?",o:["Conclusie (gevolg)","Tegenstelling","Voorbeeld","Vergelijking"],a:0,u:"Uit het verborgen prijskaartje trekt de schrijver een conclusie. ‘Daarom’ hoort bij oorzaak-gevolg/conclusie."},
+{s:"woord",q:"Wat bedoelt de schrijver met ‘een verborgen prijskaartje’?",o:["Nadelen die je niet direct ziet als je de kleding koopt","Een prijs die op de achterkant staat","Extra kosten bij de kassa","Kleding zonder prijs"],a:0,u:"Dit is beeldspraak. In alinea 2 en 3 lees je welke ‘kosten’ bedoeld worden: schade aan het milieu en slechte lonen. Dat zie je niet in de winkel."},
+{s:"structuur",q:"Wat is de functie van alinea 4?",o:["Een tegenargument noemen en weerleggen","Een nieuw argument geven","Een voorbeeld geven bij alinea 3","De conclusie trekken"],a:0,u:"‘Natuurlijk is het leuk…’ geeft toe wat tegenstanders vinden. ‘Maar dat kan ook tweedehands’ ontkracht het: het tegenargument wordt weerlegd."},
+{s:"feit",q:"Welke zin is een mening?",o:["We moeten veel minder nieuwe kleding kopen.","Voor één katoenen T-shirt zijn duizenden liters water nodig.","In kringloopwinkels wordt tweedehands kleding verkocht.","Veel kleding belandt binnen een paar jaar bij het afval."],a:0,u:"Of we minder ‘moeten’ kopen, is een oordeel van de schrijver. De andere zinnen kun je controleren met cijfers of onderzoek."},
+{s:"verwijs",q:"‘Maar dat kan ook tweedehands.’ (alinea 4). Waar verwijst ‘dat’ naar?",o:["Af en toe iets nieuws hebben","Kleding weggooien","Lange dagen werken","Water besparen"],a:0,u:"Vul in: ‘Af en toe iets nieuws hebben kan ook tweedehands.’ Dat klopt met de zin ervoor."}
+]}
+];
+
+const LEARN=[
+{t:"🧭 Tekstdoelen",h:`<p>Elke tekst heeft een hoofddoel. Vraag jezelf af: wat wil de schrijver bij mij bereiken?</p>
+<table><tr><th>Doel</th><th>De lezer moet…</th><th>Voorbeeld</th></tr>
+<tr><td><b>Informeren</b></td><td>iets weten</td><td>nieuwsbericht, schoolboek</td></tr>
+<tr><td><b>Overtuigen</b></td><td>iets vinden (mening)</td><td>betoog, recensie, reclame</td></tr>
+<tr><td><b>Activeren</b></td><td>iets doen</td><td>recept, handleiding, oproep</td></tr>
+<tr><td><b>Amuseren</b></td><td>genieten, ontspannen</td><td>verhaal, mop, column</td></tr></table>
+<p class="muted">Let op: een tekst kan meerdere doelen hebben. Kies dan het <b>hoofddoel</b>: waar gaat het grootste deel van de tekst over?</p>`},
+{t:"📚 Tekstsoorten",h:`<ul><li><b>Uiteenzettend</b> – legt iets uit (informeren).</li>
+<li><b>Beschouwend</b> – bekijkt verschillende kanten, vaak zonder duidelijke eigen mening (informeren).</li>
+<li><b>Betogend</b> – geeft een standpunt met argumenten (overtuigen).</li>
+<li><b>Instructief</b> – stappen of aanwijzingen (activeren).</li>
+<li><b>Verhalend</b> – een verhaal (amuseren).</li></ul>`},
+{t:"🎯 Onderwerp, hoofdgedachte en kernzin",h:`<p><b>Onderwerp</b>: waar gaat de tekst over? (een paar woorden, bijv. ‘slaap bij tieners’)</p>
+<p><b>Hoofdgedachte</b>: wat is het belangrijkste dat de schrijver over het onderwerp zegt? (één zin)</p>
+<p><b>Kernzin</b>: de belangrijkste zin van <i>één alinea</i>. Vaak de eerste of laatste zin.</p>
+<p><b>Zo vind je de hoofdgedachte:</b></p><ul><li>Lees de titel, de inleiding (alinea 1) en het slot (laatste alinea).</li><li>Let op woorden als ‘kortom’, ‘dus’, ‘concluderend’.</li><li>Kies bij meerkeuze het antwoord dat over de <b>hele</b> tekst gaat, niet over één alinea.</li></ul>`},
+{t:"🔗 Signaalwoorden en verbanden",h:`<table><tr><th>Verband</th><th>Signaalwoorden</th></tr>
+<tr><td>Opsomming</td><td>ook, en, bovendien, daarnaast, verder, ten eerste, ten slotte</td></tr>
+<tr><td>Tegenstelling</td><td>maar, echter, toch, hoewel, daarentegen, daar staat tegenover</td></tr>
+<tr><td>Oorzaak – gevolg</td><td>doordat, door, daardoor, dus, zodat, het gevolg is</td></tr>
+<tr><td>Reden</td><td>want, omdat, daarom (reden + conclusie)</td></tr>
+<tr><td>Doel</td><td>om … te, zodat, met als doel, opdat</td></tr>
+<tr><td>Voorwaarde</td><td>als, mits, tenzij, indien, op voorwaarde dat</td></tr>
+<tr><td>Voorbeeld</td><td>zoals, bijvoorbeeld, zo, onder andere</td></tr>
+<tr><td>Vergelijking</td><td>net als, evenals, zoals, in vergelijking met</td></tr>
+<tr><td>Tijd / volgorde</td><td>eerst, daarna, vervolgens, toen, tot slot</td></tr>
+<tr><td>Conclusie / samenvatting</td><td>kortom, dus, samenvattend, concluderend</td></tr></table>
+<p class="muted">Oorzaak of reden? Bij een <b>oorzaak</b> gebeurt iets vanzelf (door de storm viel de boom om). Bij een <b>reden</b> kiest iemand bewust (hij bleef thuis, want het stormde).</p>`},
+{t:"👉 Verwijswoorden",h:`<p>Verwijswoorden verwijzen naar iets wat eerder in de tekst staat: <i>hij, zij, het, die, dat, deze, dit, daar, daardoor, hun, hiervan…</i></p>
+<p><b>Truc:</b> zet jouw antwoord op de plek van het verwijswoord en lees de zin opnieuw. Loopt de zin en klopt de betekenis? Dan heb je het goed.</p>
+<p class="muted">Een verwijswoord kan naar één woord verwijzen, maar ook naar een hele zin of alinea.</p>`},
+{t:"⚖️ Feit en mening",h:`<p><b>Feit</b>: kun je controleren (opzoeken, meten, tellen).</p><p><b>Mening</b>: wat iemand ergens van vindt; daar kun je het mee oneens zijn.</p>
+<p>Woorden die vaak een mening verraden: <i>vind ik, volgens mij, moeten, zouden, mooi, lelijk, beste, slechtste, gelukkig, helaas, te veel</i>.</p>`},
+{t:"🧱 Tekstopbouw (structuren)",h:`<ul><li><b>Vraag – antwoord</b>: begint met een vraag, de rest beantwoordt die.</li>
+<li><b>Probleem – oorzaken – oplossingen</b></li>
+<li><b>Voordelen – nadelen</b> (beschouwing)</li>
+<li><b>Standpunt – argumenten</b> (betoog)</li>
+<li><b>Verschijnsel – verklaring</b>: iets gebeurt, en de tekst legt uit waarom.</li>
+<li><b>Chronologisch</b>: in tijdsvolgorde (geschiedenis, stappenplan).</li></ul>
+<p><b>Functie van een alinea</b>: wat dóét die alinea? Bijv. inleiding, voorbeeld, oorzaak, argument, tegenargument weerleggen, conclusie.</p>`},
+{t:"🗣️ Het betoog",h:`<ul><li><b>Standpunt</b>: de mening van de schrijver (meestal in inleiding én slot).</li>
+<li><b>Argument</b>: een reden die het standpunt ondersteunt (‘ten eerste’, ‘bovendien’).</li>
+<li><b>Tegenargument</b>: wat tegenstanders vinden (‘sommigen zeggen…’, ‘natuurlijk…’).</li>
+<li><b>Weerlegging</b>: de schrijver ontkracht het tegenargument (‘maar…’, ‘toch…’).</li></ul>`},
+{t:"🏁 Stappenplan voor een leestoets",h:`<ol style="padding-left:20px">
+<li><b>Oriënterend lezen</b> – lees titel, tussenkopjes, eerste en laatste alinea. Waar gaat het over?</li>
+<li><b>Lees de vragen</b> – dan weet je waar je op moet letten.</li>
+<li><b>Globaal lezen</b> – lees de hele tekst één keer rustig door.</li>
+<li><b>Zoekend / intensief lezen</b> – zoek per vraag de juiste alinea op en lees die nauwkeurig.</li>
+<li><b>Streep foute antwoorden weg</b> – vaak zijn er twee duidelijk fout. Kies tussen de rest.</li>
+<li><b>Controleer</b> – staat je antwoord echt in de tekst, of is het je eigen mening?</li></ol>`}
+];
+
+
+
+/* ===== opslag ===== */
+const KEY="flits_v1";
+let S=null;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+const uid=()=>Math.random().toString(36).slice(2,10);
+function dayNum(d=new Date()){return Math.floor(new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()/864e5)}
+function mkCard(f,b){return{id:uid(),f,b,box:0,due:0,seen:0,right:0}}
+function buildVak(v){return{id:uid(),name:v.name,ico:v.ico,color:v.color,lezen:!!v.lezen,decks:[]}}
+if(!S||!S.vakken)S={vakken:STARTER.map(buildVak),xp:0,streak:0,lastDay:null,ver:3};
+if(!S.ver||S.ver<2){S.ver=S.ver||0; // nieuwe vakken toevoegen aan een bestaande app
+  STARTER.forEach((st,i)=>{const v=S.vakken.find(x=>x.name.toLowerCase()===st.name.toLowerCase());
+    if(!v){const nv=buildVak(st);if(st.lezen)S.vakken.unshift(nv);else S.vakken.push(nv)}else if(st.lezen)v.lezen=true});
+  S.ver=Math.max(S.ver||0,2);
+}
+if(S.ver<3){ // voorbeeldkaarten uit eerdere versie weghalen
+  const ex=new Set(["Signaalwoorden","Zinsdelen en woordsoorten","Werkwoordspelling","Voorbeeld: woordjes","De 10 tijdvakken","Hoofdsteden Europa","Voorbeeld: de cel","Voorbeeld: formules","Grootheden en eenheden","Voorbeeld: begrippen"]);
+  const anyEx=S.vakken.some(v=>v.decks.some(d=>d.ex));
+  S.vakken.forEach(v=>v.decks=v.decks.filter(d=>!(d.ex||(!anyEx&&ex.has(d.name)))));S.ver=3;
+}
+S.lees=S.lees||{};S.write=S.write||"draw";S.count=(S.count===undefined)?10:S.count;S.which=S.which||"due";S.dir=S.dir||"fb";
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+save();
+function markDay(){const t=dayNum();if(S.lastDay===t)return;S.streak=(S.lastDay===t-1)?S.streak+1:1;S.lastDay=t}
+
+/* ===== helpers ===== */
+const $=id=>document.getElementById(id);
+const app=$("app");
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const vak=id=>S.vakken.find(v=>v.id===id);
+const deck=(v,id)=>v&&v.decks.find(d=>d.id===id);
+const isDue=c=>c.due<=dayNum();
+const known=c=>c.box>=3;
+const allCards=v=>v.decks.flatMap(d=>d.cards);
+function stats(cards){const n=cards.length;return{n,due:cards.filter(isDue).length,known:cards.filter(known).length,pct:n?Math.round(100*cards.filter(known).length/n):0}}
+function shade(h){const n=parseInt(h.slice(1),16);return`rgb(${(n>>16)*.55|0},${((n>>8)&255)*.55|0},${(n&255)*.55|0})`}
+function norm(s){return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\(.*?\)/g,"").replace(/[^a-z0-9ß²³½]+/g," ").trim()}
+function isRight(val,ans){const n=norm(val);if(!n)return false;const opts=[ans,...ans.split(/[\/,;]| of /)].map(norm).filter(Boolean);return opts.includes(n)}
+function limit(arr){return S.count?arr.slice(0,S.count):arr}
+function pickDir(){return S.dir==="mix"?(Math.random()<.5?"fb":"bf"):S.dir}
+function qa(it){return it.dir==="fb"?{q:it.c.f,a:it.c.b,ql:"Voorkant",al:"Achterkant",qi:it.c.img,ai:null}:{q:it.c.b,a:it.c.f,ql:"Achterkant",al:"Voorkant",qi:null,ai:it.c.img}}
+const im=(src,cls)=>src?`<img class="${cls||"cimg"}" src="${src}" alt="">`:"";
+function quizPool(v,d){return d.cards.length>=4?d.cards:allCards(v)}
+function optsFor(it){const x=qa(it);const pool=quizPool(it.v,it.d).filter(c=>c.id!==it.c.id).map(c=>it.dir==="fb"?c.b:c.f).filter(t=>t!==x.a);return shuffle([x.a,...shuffle([...new Set(pool)]).slice(0,3)])}
+function cijfer(g,n){return Math.max(1,Math.round((1+9*g/n)*10)/10)}
+function backToDeck(vid,did){go({v:"deck",vid,did})}
+
+let R={v:"home"};
+function go(r){R=r;closeSheet();clearInterval(window._tick);window.scrollTo(0,0);render()}
+function render(){({home:vHome,vak:vVak,deck:vDeck,lezen:vLezen,tekst:vTekst,maker:vMaker})[R.v]()}
+
+/* ===== pop-up ===== */
+function sheet(html){$("sheet").innerHTML=`<div class="sheet" onclick="if(event.target===this)closeSheet()"><div class="in">${html}</div></div>`;document.body.style.overflow="hidden";const f=document.querySelector(".sheet input, .sheet textarea");if(f)setTimeout(()=>f.focus(),80)}
+function closeSheet(){$("sheet").innerHTML="";document.body.style.overflow=""}
+
+/* ===== HOME ===== */
+function vHome(){
+  const all=S.vakken.flatMap(allCards),st=stats(all);
+  app.innerHTML=`<h1>Flits ⚡</h1><p class="muted">Leer al je vakken: flashcards, spelletjes, toetsen en begrijpend lezen</p>
+  <div class="grid2" style="margin:14px 0 12px">
+    <div class="stat"><b>🔥 ${S.streak||0}</b><span class="muted">dagen op rij</span></div>
+    <div class="stat"><b>⭐ ${S.xp}</b><span class="muted">punten</span></div>
+  </div>
+  ${st.due?`<div class="card"><h3>📚 ${st.due} kaarten te leren vandaag</h3><p class="muted">Uit alle vakken, de kaarten die nu herhaald moeten worden.</p><button class="btn" onclick="startStudy('flash',{scope:'all'})">Start met leren</button></div>`:(st.n?`<div class="card"><h3>✅ Alles herhaald!</h3><p class="muted">Er staan vandaag geen kaarten meer klaar.</p></div>`:"")}
+  <div class="card hero"><h3>✍️ Maak je eigen kaarten</h3><p class="muted">Schrijf je eigen vragen en antwoorden, bijvoorbeeld de woordjes of begrippen van je volgende toets.</p>
+  <button class="btn" style="background:#fff;color:#3b4fd8" onclick="makerStart()">Kaarten maken</button></div>
+  <h2>Vakken</h2>
+  <div class="vakgrid">${S.vakken.map(v=>{const s=stats(allCards(v));return`<div class="vak" style="background:linear-gradient(145deg,${v.color},${shade(v.color)})" onclick="go({v:'vak',vid:'${v.id}'})">
+    ${s.due?`<span class="due">${s.due}</span>`:""}<span class="e">${v.ico}</span><div><b>${esc(v.name)}</b><br><small>${s.n?`${s.n} kaarten`:"nog leeg"}${v.lezen?" · lezen":""}</small></div></div>`}).join("")}
+    <div class="vak add" onclick="vakForm()"><div><div style="font-size:28px">＋</div>Vak toevoegen</div></div>
+  </div>`;
+}
+function makerStart(){
+  sheet(`<div class="topbar"><b>✍️ Kaarten maken</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <label>Vak</label><select id="mkv" onchange="mkSets()">${S.vakken.map(v=>`<option value="${v.id}">${v.ico} ${esc(v.name)}</option>`).join("")}</select>
+  <label>Set</label><select id="mkd" onchange="$('mknew').style.display=this.value==='_new'?'block':'none'"></select>
+  <div id="mknew"><label>Naam van de nieuwe set</label><input id="dn" placeholder="bijv. Hoofdstuk 3 – woordjes" maxlength="40"></div>
+  <button class="btn" onclick="mkGo()">Start met schrijven</button>`);mkSets();
+}
+function mkSets(){const v=vak($("mkv").value);$("mkd").innerHTML=`<option value="_new">＋ Nieuwe set</option>`+v.decks.map(d=>`<option value="${d.id}">${esc(d.name)} (${d.cards.length})</option>`).join("");$("mknew").style.display="block"}
+function mkGo(){const vid=$("mkv").value;let did=$("mkd").value;
+  if(did==="_new"){const name=$("dn").value.trim();if(!name){$("dn").focus();return}const d={id:uid(),name,cards:[]};vak(vid).decks.push(d);save();did=d.id}
+  go({v:"maker",vid,did})}
+function newSetAnywhere(){
+  sheet(`<div class="topbar"><b>✍️ Nieuwe set</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <label>Voor welk vak?</label><select id="nsv">${S.vakken.map(v=>`<option value="${v.id}">${v.ico} ${esc(v.name)}</option>`).join("")}</select>
+  <label>Naam van de set</label><input id="dn" placeholder="bijv. Hoofdstuk 3 – woordjes" maxlength="40" onkeydown="if(event.key==='Enter')saveDeck($('nsv').value,'')">
+  <button class="btn" onclick="saveDeck($('nsv').value,'')">Maak set en voeg kaarten toe</button>`);
+}
+
+/* ===== vak toevoegen / aanpassen ===== */
+function vakForm(vid){
+  const v=vid?vak(vid):{name:"",ico:"📘",color:COLORS[0]};
+  window._pick={ico:v.ico,color:v.color};
+  sheet(`<div class="topbar"><b>${vid?"Vak aanpassen":"Nieuw vak"}</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <label>Naam</label><input id="vn" value="${esc(v.name)}" placeholder="bijv. Latijn" maxlength="30">
+  <label>Icoon</label><div class="picks">${ICONS.map(i=>`<button class="${i===v.ico?"on":""}" onclick="pickI(this,'ico','${i}')">${i}</button>`).join("")}</div>
+  <label>Kleur</label><div class="picks">${COLORS.map(c=>`<button class="${c===v.color?"on":""}" style="background:${c}" onclick="pickI(this,'color','${c}')"></button>`).join("")}</div>
+  <button class="btn" onclick="saveVak('${vid||""}')">Opslaan</button>
+  ${vid?`<button class="btn red" onclick="delVak('${vid}')">Vak verwijderen</button>`:""}`);
+}
+function pickI(el,k,val){window._pick[k]=val;[...el.parentNode.children].forEach(b=>b.classList.remove("on"));el.classList.add("on")}
+function saveVak(vid){
+  const name=$("vn").value.trim();if(!name){$("vn").focus();return}
+  if(vid){Object.assign(vak(vid),{name,..._pick});save();go({v:"vak",vid})}
+  else{const v={id:uid(),name,..._pick,decks:[]};S.vakken.push(v);save();go({v:"vak",vid:v.id})}
+}
+function delVak(vid){const v=vak(vid);if(!confirm(`‘${v.name}’ met alle sets en kaarten verwijderen?`))return;S.vakken=S.vakken.filter(x=>x.id!==vid);save();go({v:"home"})}
+
+/* ===== VAK ===== */
+function vVak(){
+  const v=vak(R.vid);if(!v)return go({v:"home"});
+  const st=stats(allCards(v));
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="go({v:'home'})">‹ Vakken</button><button class="x" onclick="vakForm('${v.id}')">✏️ Aanpassen</button></div>
+  <h1>${v.ico} ${esc(v.name)}</h1><p class="muted">${st.n} kaarten · ${st.pct}% gekend</p>
+  ${v.lezen?`<div class="item" style="background:linear-gradient(145deg,${v.color},${shade(v.color)});border:0;color:#fff" onclick="go({v:'lezen',vid:'${v.id}',tab:'teksten'})">
+    <div class="ico" style="background:rgba(255,255,255,.2)">📖</div><div class="grow"><b>Begrijpend lezen</b><br><small>${TEXTS.length} teksten met vragen · leerstof</small></div><b>›</b></div>`:""}
+  ${st.due?`<button class="btn" onclick="startStudy('flash',{scope:'vak',vid:'${v.id}'})">Leer alles van ${esc(v.name)} (${st.due})</button>`:""}
+  <div class="row between" style="margin-top:20px"><h2 style="margin:0">Sets</h2><button class="btn small" onclick="deckForm('${v.id}')">＋ Nieuwe set</button></div>
+  <div style="margin-top:10px">${v.decks.length?v.decks.map(d=>{const s=stats(d.cards);return`<div class="item" onclick="go({v:'deck',vid:'${v.id}',did:'${d.id}'})">
+    <div class="grow"><b>${esc(d.name)}</b><br><span class="muted">${s.n} kaarten</span> ${s.due?`<span class="tag due">${s.due} te leren</span>`:""}
+    <div class="bar"><i style="width:${s.pct}%"></i></div></div><b>${s.pct}%</b></div>`}).join(""):`<div class="card center"><div style="font-size:40px">✍️</div><h3>Nog geen kaarten</h3><p class="muted">Maak een set, bijvoorbeeld per hoofdstuk, en schrijf je eigen kaarten.</p><button class="btn" onclick="deckForm('${v.id}')">Maak je eerste set</button></div>`}</div>
+  <button class="btn alt" onclick="deckForm('${v.id}')">✍️ Maak een eigen set</button>`;
+}
+function deckForm(vid,did){
+  const d=did?deck(vak(vid),did):{name:""};
+  sheet(`<div class="topbar"><b>${did?"Set hernoemen":"Nieuwe set"}</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <label>Naam van de set</label><input id="dn" value="${esc(d.name)}" placeholder="bijv. Hoofdstuk 3 – woordjes" maxlength="40" onkeydown="if(event.key==='Enter')saveDeck('${vid}','${did||""}')">
+  <button class="btn" onclick="saveDeck('${vid}','${did||""}')">${did?"Opslaan":"Maak set en voeg kaarten toe"}</button>
+  ${did?`<button class="btn red" onclick="delDeck('${vid}','${did}')">Set verwijderen</button>`:""}`);
+}
+function saveDeck(vid,did){
+  const name=$("dn").value.trim();if(!name){$("dn").focus();return}const v=vak(vid);
+  if(did){deck(v,did).name=name;save();go({v:"deck",vid,did})}
+  else{const d={id:uid(),name,cards:[]};v.decks.push(d);save();go({v:"maker",vid,did:d.id})}
+}
+function delDeck(vid,did){const v=vak(vid),d=deck(v,did);if(!confirm(`Set ‘${d.name}’ verwijderen?`))return;v.decks=v.decks.filter(x=>x.id!==did);save();go({v:"vak",vid})}
+function addChoice(vid,did){
+  sheet(`<div class="topbar"><b>Kaarten toevoegen</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <button class="btn" onclick="go({v:'maker',vid:'${vid}',did:'${did}'})">✍️ Zelf kaarten schrijven</button>
+  <button class="btn alt" onclick="bulkForm('${vid}','${did}')">📋 Een hele lijst plakken</button>`);
+}
+
+/* ===== SET ===== */
+function seg(key,opts){return`<div class="seg">${opts.map(([val,lab,dis])=>`<button class="${S[key]===val?"on":""}" ${dis?"disabled":""} onclick="S.${key}=${JSON.stringify(val).replace(/"/g,"'")};save();vDeck()">${lab}</button>`).join("")}</div>`}
+function vDeck(){
+  const v=vak(R.vid),d=deck(v,R.did);if(!d)return go({v:"home"});
+  const st=stats(d.cards),id=`'${v.id}','${d.id}'`;
+  if(!st.due&&S.which==="due")S.which="all";
+  const canQ=quizPool(v,d).length>=4,n=st.n;
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="go({v:'vak',vid:'${v.id}'})">‹ ${esc(v.name)}</button><button class="x" onclick="deckForm(${id})">✏️ Naam</button></div>
+  <h1>${esc(d.name)}</h1><p class="muted">${st.n} kaarten · ${st.known} gekend · ${st.due} te leren</p>
+  <div class="bar" style="margin-bottom:14px"><i style="width:${st.pct}%"></i></div>
+  ${n?`<div class="card">
+    <label>Hoeveel kaarten per ronde?</label>${seg("count",COUNTS.map(c=>[c,c?String(c):"Alle"]))}
+    <label>Welke kaarten?</label>${seg("which",[["due",`Te leren (${st.due})`,!st.due],["all",`Alles (${st.n})`]])}
+    <label>Richting</label>${seg("dir",[["fb","Voor → achter"],["bf","Achter → voor"],["mix","Gemengd"]])}
+    <div class="grp">Leren</div>
+    <div class="modes">
+      <button class="mode" onclick="startStudy('flash',{scope:'deck',vid:'${v.id}',did:'${d.id}'})"><span>🃏</span>Flashcards</button>
+      <button class="mode" onclick="startStudy('type',{scope:'deck',vid:'${v.id}',did:'${d.id}'})"><span>⌨️</span>Typen</button>
+      <button class="mode" onclick="leesLijst(${id})"><span>👀</span>Leeslijst</button>
+    </div>
+    <div class="grp">Oefenen</div>
+    <div class="modes">
+      <button class="mode" ${canQ?"":"disabled"} onclick="startStudy('quiz',{scope:'deck',vid:'${v.id}',did:'${d.id}'})"><span>🔘</span>Meerkeuze</button>
+      <button class="mode" ${n>=2?"":"disabled"} onclick="startTF(${id})"><span>⚖️</span>Waar / niet</button>
+      <button class="mode" onclick="startScr(${id})"><span>🔤</span>Husselen</button>
+    </div>
+    <div class="grp">Spelletjes</div>
+    <div class="modes">
+      <button class="mode" ${n>=3?"":"disabled"} onclick="startMatch(${id})"><span>🧩</span>Koppelen</button>
+      <button class="mode" ${n>=3?"":"disabled"} onclick="startMemory(${id})"><span>🧠</span>Memory</button>
+      <button class="mode" ${canQ?"":"disabled"} onclick="startSpeed(${id})"><span>⏱️</span>Snelrace</button>
+    </div>
+    <button class="btn" style="margin-top:14px" onclick="startToets(${id})">📝 Oefentoets met cijfer</button>
+    ${canQ?"":`<p class="muted" style="margin:8px 0 0">Meerkeuze en Snelrace kunnen vanaf 4 kaarten.</p>`}
+  </div>`:`<div class="card"><h3>Deze set is nog leeg</h3><p class="muted">Schrijf je eigen kaarten of plak een lijst met woordjes.</p><button class="btn" onclick="go({v:'maker',vid:'${v.id}',did:'${d.id}'})">✍️ Kaarten maken</button></div>`}
+  <div class="row between" style="margin-top:18px"><h2 style="margin:0">Kaarten</h2>
+  <span><button class="btn small alt" onclick="bulkForm(${id})">📋 Lijst</button> <button class="btn small" onclick="go({v:'maker',vid:'${v.id}',did:'${d.id}'})">✍️ Kaarten maken</button></span></div>
+  <div class="card" style="margin-top:10px;padding:6px 14px">${n?d.cards.map(c=>`<div class="kaart">${c.img?`<img class="thumb" src="${c.img}">`:""}<div class="f">${known(c)?"✅ ":""}${esc(c.f)}</div><div class="b">${esc(c.b)}</div><button onclick="cardForm(${id},'${c.id}')">✏️</button></div>`).join(""):`<p class="muted" style="padding:10px 0">Nog geen kaarten.</p>`}</div>`;
+}
+function cardForm(vid,did,cid){
+  const c=cid?deck(vak(vid),did).cards.find(x=>x.id===cid):{f:"",b:""};
+  sheet(`<div class="topbar"><b>${cid?"Kaart aanpassen":"✍️ Schrijf een kaart"}</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <label>Voorkant (vraag of woord)</label><textarea id="cf" style="min-height:70px" placeholder="bijv. het huis">${esc(c.f)}</textarea>
+  <label>Achterkant (antwoord of vertaling)</label><textarea id="cb" style="min-height:70px" placeholder="bijv. la maison">${esc(c.b)}</textarea>
+  <button class="btn" onclick="saveCard('${vid}','${did}','${cid||""}',${cid?"false":"true"})">${cid?"Opslaan":"Opslaan + volgende kaart"}</button>
+  ${cid?`<button class="btn red" onclick="delCard('${vid}','${did}','${cid}')">Kaart verwijderen</button>`:`<button class="btn alt" onclick="closeSheet()">Klaar</button>`}
+  <p class="muted center" id="added"></p>`);
+}
+function saveCard(vid,did,cid,again){
+  const f=$("cf").value.trim(),b=$("cb").value.trim();if(!f||!b){(f?$("cb"):$("cf")).focus();return}
+  const d=deck(vak(vid),did);
+  if(cid){const c=d.cards.find(x=>x.id===cid);c.f=f;c.b=b}else d.cards.push(mkCard(f,b));
+  save();vDeck();
+  if(again){$("cf").value="";$("cb").value="";$("cf").focus();$("added").textContent=`✅ Toegevoegd · ${d.cards.length} kaarten in deze set`}else closeSheet();
+}
+function delCard(vid,did,cid){const d=deck(vak(vid),did);d.cards=d.cards.filter(x=>x.id!==cid);save();closeSheet();vDeck()}
+function parseList(txt){
+  const out=[];txt.split("\n").forEach(line=>{const l=line.trim();if(!l)return;
+    for(const sep of ["\t"," = ","="," – "," - ",";",":"]){const i=l.indexOf(sep);if(i>0){const f=l.slice(0,i).trim(),b=l.slice(i+sep.length).trim();if(f&&b)out.push({f,b});return}}});
+  return out;
+}
+function bulkForm(vid,did){
+  sheet(`<div class="topbar"><b>📋 Lijst plakken</b><button class="x" onclick="closeSheet()">✕</button></div>
+  <p class="muted">Eén kaart per regel. Zet tussen voor- en achterkant een <b>=</b>, <b>-</b>, <b>:</b> of tab.</p>
+  <textarea id="bl" placeholder="het huis = la maison&#10;de school = l'école&#10;eten = manger" oninput="$('bc').textContent=parseList(this.value).length+' kaarten gevonden'"></textarea>
+  <p class="muted" id="bc">0 kaarten gevonden</p>
+  <button class="btn" onclick="saveBulk('${vid}','${did}')">Toevoegen</button>`);
+}
+function saveBulk(vid,did){const list=parseList($("bl").value);if(!list.length)return;const d=deck(vak(vid),did);list.forEach(c=>d.cards.push(mkCard(c.f,c.b)));save();closeSheet();vDeck()}
+
+/* ===== LEREN: flashcards / meerkeuze / typen ===== */
+let Z=null;
+function startStudy(mode,o){
+  let src=[];
+  if(o.scope==="all")S.vakken.forEach(v=>v.decks.forEach(d=>d.cards.filter(isDue).forEach(c=>src.push({c,v,d}))));
+  else if(o.scope==="vak"){const v=vak(o.vid);v.decks.forEach(d=>d.cards.filter(isDue).forEach(c=>src.push({c,v,d})))}
+  else{const v=vak(o.vid),d=deck(v,o.did);(S.which==="due"?d.cards.filter(isDue):d.cards).forEach(c=>src.push({c,v,d}))}
+  if(!src.length)return;
+  const q=limit(shuffle(src)).map(x=>({...x,dir:o.scope==="deck"?pickDir():"fb",tries:0}));
+  Z={mode,o,q,i:0,right:0,firstWrong:new Set(),total:q.length,flipped:false};
+  window.scrollTo(0,0);studyView();
+}
+function exitStudy(){const o=Z.o;Z=null;if(o.scope==="deck")backToDeck(o.vid,o.did);else if(o.scope==="vak")go({v:"vak",vid:o.vid});else go({v:"home"})}
+function head(){return`<div class="topbar"><button class="x" onclick="exitStudy()">✕ Stoppen</button><span class="muted">nog ${Z.q.length-Z.i} · ${Z.right}/${Z.total} ✅</span></div><div class="pbar"><i style="width:${Math.round(100*Z.right/Z.total)}%"></i></div>`}
+function studyView(){
+  if(Z.i>=Z.q.length)return endView();
+  const it=Z.q[Z.i],x=qa(it);
+  const sub=Z.o.scope==="deck"?"":`<p class="muted" style="margin:6px 0 0">${it.v.ico} ${esc(it.v.name)} · ${esc(it.d.name)}</p>`;
+  Z.flipped=false;Z.drawn=false;
+  if(Z.mode==="flash"){
+    app.innerHTML=head()+sub+`<div class="stage"><div class="flip enter" id="fl" onclick="flipCard()">
+      <div class="stamp ok" id="sok">✅ WEET IK</div><div class="stamp no" id="sno">❌ NOG NIET</div>
+      <div class="in">
+        <div class="side front" style="background:linear-gradient(145deg,${it.v.color},${shade(it.v.color)})"><span class="lbl">${x.ql}</span>${im(x.qi)}<div class="w">${esc(x.q)}</div><span class="hint">Tik om om te draaien ↻</span></div>
+        <div class="side back"><span class="lbl">${x.al}</span>${im(x.ai)}<div class="w">${esc(x.a)}</div><div id="mine"></div></div>
+      </div></div></div><div id="under">${writeArea()}</div>`;
+    initPad();
+  }else if(Z.mode==="quiz"){
+    Z.opts=optsFor(it);
+    app.innerHTML=head()+sub+`<div class="qcard"><div class="muted">${x.ql}</div>${im(x.qi,"qimg")}<div class="w">${esc(x.q)}</div></div>
+    ${Z.opts.map((o,i)=>`<button class="opt" data-i="${i}" onclick="pickQ(${i})">${esc(o)}</button>`).join("")}<div id="fbk"></div>`;
+  }else{
+    app.innerHTML=head()+sub+`<div class="qcard"><div class="muted">${x.ql}</div>${im(x.qi,"qimg")}<div class="w">${esc(x.q)}</div></div>
+    <input id="ta" placeholder="Typ het antwoord…" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkType()">
+    <div id="fbk"><button class="btn" onclick="checkType()">Controleer</button><button class="btn alt" onclick="checkType(true)">Weet ik niet</button></div>`;
+    setTimeout(()=>$("ta")&&$("ta").focus(),50);
+  }
+}
+/* zelf opschrijven */
+function writeArea(){
+  return `<label>Schrijf eerst zelf je antwoord op</label>
+  <div class="seg">${[["draw","✍️ Met je vinger"],["type","⌨️ Typen"],["none","💭 In je hoofd"]].map(([m,l])=>`<button class="${S.write===m?"on":""}" onclick="setWrite('${m}')">${l}</button>`).join("")}</div>
+  ${S.write==="draw"?`<div class="padwrap"><canvas id="pad"></canvas><div class="padph" id="padph">Schrijf hier je antwoord ✍️</div><button class="x padclear" onclick="clearPad()">Wissen</button></div>`:
+    S.write==="type"?`<input id="mineIn" placeholder="Schrijf hier je antwoord…" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')flipCard()">`:""}
+  <button class="btn" onclick="flipCard()">Draai de kaart om ↻</button>`;
+}
+function setWrite(m){S.write=m;save();$("under").innerHTML=writeArea();initPad();if(m==="type")$("mineIn").focus()}
+function initPad(){
+  const c=$("pad");if(!c)return;const r=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+  c.width=r.width*dpr;c.height=r.height*dpr;const ctx=c.getContext("2d");ctx.scale(dpr,dpr);
+  ctx.lineWidth=3.5;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#fff";
+  let down=false;
+  const pos=e=>{const b=c.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top]};
+  c.onpointerdown=e=>{down=true;c.setPointerCapture(e.pointerId);const[x,y]=pos(e);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+.1,y+.1);ctx.stroke();Z.drawn=true;$("padph").style.display="none"};
+  c.onpointermove=e=>{if(!down)return;const[x,y]=pos(e);ctx.lineTo(x,y);ctx.stroke()};
+  c.onpointerup=c.onpointercancel=()=>{down=false};
+}
+function clearPad(){const c=$("pad");c.getContext("2d").clearRect(0,0,c.width,c.height);Z.drawn=false;$("padph").style.display=""}
+function flipCard(){
+  if(!Z||Z.flipped||Z.mode!=="flash")return;Z.flipped=true;
+  const it=Z.q[Z.i],x=qa(it),fl=$("fl");let mine="";
+  if(S.write==="draw"&&Z.drawn)mine=`<div class="mlbl">Jouw antwoord</div><img src="${$("pad").toDataURL()}">`;
+  if(S.write==="type"){const val=$("mineIn").value.trim();if(val){const ok=isRight(val,x.a);mine=`<div class="mlbl">Jij schreef</div><div class="mt" style="color:${ok?"#22a35a":"#d64545"}">${ok?"✅":"❌"} ${esc(val)}</div>`}}
+  $("mine").innerHTML=mine;
+  fl.classList.remove("enter");void fl.offsetWidth;fl.classList.add("on","lift");setTimeout(()=>fl.classList.remove("lift"),820);
+  $("under").innerHTML=`<p class="muted center" style="margin-bottom:8px">Was het goed? Kies hieronder, of swipe de kaart: ➡️ weet ik · ⬅️ nog niet</p>
+  <div class="grades"><button class="g0" onclick="gradeFlash(0)">❌<br>Nog niet</button><button class="g1" onclick="gradeFlash(1)">🤔<br>Bijna</button><button class="g2" onclick="gradeFlash(2)">✅<br>Weet ik</button></div>`;
+  enableSwipe();
+}
+function enableSwipe(){
+  const fl=$("fl");let sx=null,dx=0;
+  fl.onpointerdown=e=>{if(!Z.flipped)return;sx=e.clientX;dx=0;fl.style.transition="none";fl.setPointerCapture(e.pointerId)};
+  fl.onpointermove=e=>{if(sx===null)return;dx=e.clientX-sx;fl.style.transform=`translateX(${dx}px) rotate(${dx/16}deg)`;$("sok").style.opacity=Math.max(0,Math.min(1,dx/90));$("sno").style.opacity=Math.max(0,Math.min(1,-dx/90))};
+  fl.onpointerup=fl.onpointercancel=()=>{if(sx===null)return;sx=null;fl.style.transition="transform .25s";
+    if(dx>90)gradeFlash(2);else if(dx<-90)gradeFlash(0);else{fl.style.transform="";$("sok").style.opacity=0;$("sno").style.opacity=0}};
+}
+function gradeFlash(g){
+  const fl=$("fl");if(!fl||Z.anim)return;Z.anim=true;
+  fl.classList.add(g===2?"fly-r":g===0?"fly-l":"fly-u");
+  setTimeout(()=>{Z.anim=false;grade(g)},360);
+}
+function grade(g){
+  const it=Z.q[Z.i],c=it.c,t=dayNum();c.seen++;markDay();
+  if(g===2&&!Z.firstWrong.has(c.id)){c.box=Math.min(6,c.box+1);c.due=t+INT[c.box];c.right++;S.xp+=10}
+  else if(g===2)c.due=t+1;
+  else if(g===1){c.box=Math.max(1,c.box);c.due=t+1;Z.firstWrong.add(c.id)}
+  else{c.box=0;c.due=t;Z.firstWrong.add(c.id)}
+  if(g===2||it.tries>=3)Z.right++;else Z.q.push({...it,tries:it.tries+1});
+  save();Z.i++;studyView();
+}
+function pickQ(i){
+  if(Z.locked)return;Z.locked=true;const x=qa(Z.q[Z.i]),ok=Z.opts[i]===x.a;
+  document.querySelectorAll(".opt").forEach(b=>{const j=+b.dataset.i;b.disabled=true;if(Z.opts[j]===x.a)b.classList.add("good");else if(j===i)b.classList.add("bad")});
+  feedback(ok,x.a);
+}
+function checkType(giveUp){
+  if(Z.locked)return;const x=qa(Z.q[Z.i]),val=giveUp?"":$("ta").value;
+  if(!giveUp&&!val.trim()){$("ta").focus();return}
+  Z.locked=true;const ok=!giveUp&&isRight(val,x.a);$("ta").disabled=true;feedback(ok,x.a,!ok&&!giveUp);
+}
+function feedback(ok,ans,canOverride){
+  $("fbk").innerHTML=`<div class="fb ${ok?"good":"bad"}"><b>${ok?"✅ Goed! +10":"❌ Niet goed"}</b>${ok?"":`<p style="margin:6px 0 0">Het antwoord is: <b>${esc(ans)}</b></p>`}</div>
+  <button class="btn" onclick="nextQ(${ok?2:0})">Volgende</button>${canOverride?`<button class="btn alt" onclick="nextQ(2)">Ik had het toch goed</button>`:""}`;
+  $("fbk").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function nextQ(g){Z.locked=false;grade(g)}
+function endView(){
+  const first=Z.total-Z.firstWrong.size,p=Math.round(100*first/Z.total);
+  app.innerHTML=`<div class="card center" style="margin-top:30px"><div class="muted">In één keer goed</div><div class="big">${first}/${Z.total}</div>
+    <h3>${p===100?"Perfect! 🏆":p>=80?"Sterk bezig! 💪":p>=55?"Goed op weg! 👍":"Blijven herhalen, dan lukt het! 🔁"}</h3>
+    <p class="muted">${Z.firstWrong.size?`${Z.firstWrong.size} kaart${Z.firstWrong.size===1?"":"en"} extra geoefend; die komen morgen terug.`:"De kaarten komen later terug, zodat je ze niet vergeet."}</p></div>
+  ${Z.firstWrong.size?`<button class="btn" onclick="redoWrong()">Oefen de lastige kaarten nog eens</button>`:""}
+  <button class="btn alt" onclick="exitStudy()">Klaar</button>`;
+}
+function redoWrong(){
+  const seen=new Set(),items=[];Z.q.forEach(it=>{if(Z.firstWrong.has(it.c.id)&&!seen.has(it.c.id)){seen.add(it.c.id);items.push({...it,tries:0})}});
+  Z={...Z,q:shuffle(items),i:0,right:0,firstWrong:new Set(),total:items.length};studyView();
+}
+
+/* ===== KOPPELEN ===== */
+let M=null;
+function startMatch(vid,did){
+  const d=deck(vak(vid),did),n=Math.min(S.count||6,6);
+  const cards=shuffle(d.cards).slice(0,n);
+  M={vid,did,tiles:shuffle(cards.flatMap(c=>[{id:c.id,t:c.f,k:"f"},{id:c.id,t:c.b,k:"b"}])),sel:null,left:cards.length,start:Date.now(),fouten:0};
+  matchView();
+}
+function matchView(){
+  const d=deck(vak(M.vid),M.did);
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="backToDeck('${M.vid}','${M.did}')">✕ Stoppen</button><span class="muted">${d.bestMatch?`record ${d.bestMatch}s`:""}</span></div>
+  <h2 style="margin-top:4px">🧩 Koppel de paren</h2><p class="muted">Tik een vraag en daarna het juiste antwoord. Zo snel mogelijk!</p>
+  <div class="tiles">${M.tiles.map((t,i)=>`<button class="tile ${t.gone?"gone":""} ${M.sel===i?"sel":""}" id="t${i}" onclick="tapTile(${i})">${esc(t.t)}</button>`).join("")}</div>`;
+}
+function tapTile(i){
+  const t=M.tiles[i];if(t.gone||M.busy)return;
+  if(M.sel===null||M.sel===i){M.sel=M.sel===i?null:i;matchView();return}
+  const a=M.tiles[M.sel];
+  if(a.id===t.id&&a.k!==t.k){a.gone=t.gone=true;M.sel=null;M.left--;if(!M.left)return matchEnd();matchView()}
+  else{M.fouten++;M.busy=true;const j=M.sel;$("t"+i).classList.add("wrong");$("t"+j).classList.add("wrong");setTimeout(()=>{M.busy=false;M.sel=null;matchView()},550)}
+}
+function matchEnd(){
+  const sec=Math.round((Date.now()-M.start)/1000),d=deck(vak(M.vid),M.did),rec=!d.bestMatch||sec<d.bestMatch;
+  if(rec)d.bestMatch=sec;S.xp+=20;markDay();save();
+  app.innerHTML=`<div class="card center" style="margin-top:30px"><div class="muted">Jouw tijd</div><div class="big">${sec}s</div>
+  <h3>${rec?"🏆 Nieuw record!":"Goed gedaan! 👍"}</h3><p class="muted">${M.fouten} fout${M.fouten===1?"":"en"} · record ${d.bestMatch}s</p></div>
+  <button class="btn" onclick="startMatch('${M.vid}','${M.did}')">Nog een keer</button><button class="btn alt" onclick="backToDeck('${M.vid}','${M.did}')">Klaar</button>`;
+}
+
+/* ===== MEMORY ===== */
+let MM=null;
+function startMemory(vid,did){
+  const d=deck(vak(vid),did),n=Math.min(S.count||6,6);
+  const cards=shuffle(d.cards).slice(0,n);
+  MM={vid,did,tiles:shuffle(cards.flatMap(c=>[{id:c.id,t:c.f,k:"f"},{id:c.id,t:c.b,k:"b"}])),open:[],moves:0,found:0,n:cards.length,start:Date.now()};
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="backToDeck('${vid}','${did}')">✕ Stoppen</button><span class="muted" id="mmv">0 beurten</span></div>
+  <h2 style="margin-top:4px">🧠 Memory</h2><p class="muted">Draai twee kaarten om. Vind steeds de vraag en het antwoord die bij elkaar horen.</p>
+  <div class="memgrid">${MM.tiles.map((t,i)=>`<div class="mem" id="m${i}" onclick="memTap(${i})"><div class="in"><div class="mf">?</div><div class="mb">${esc(t.t)}</div></div></div>`).join("")}</div>`;
+}
+function memTap(i){
+  const t=MM.tiles[i];if(MM.busy||t.up||t.done)return;
+  t.up=true;$("m"+i).classList.add("up");MM.open.push(i);
+  if(MM.open.length<2)return;
+  MM.moves++;$("mmv").textContent=MM.moves+" beurten";MM.busy=true;
+  const[a,b]=MM.open.map(j=>MM.tiles[j]),[ia,ib]=MM.open;MM.open=[];
+  if(a.id===b.id&&a.k!==b.k){setTimeout(()=>{a.done=b.done=true;$("m"+ia).classList.add("done");$("m"+ib).classList.add("done");MM.busy=false;MM.found++;if(MM.found===MM.n)setTimeout(memEnd,600)},450)}
+  else setTimeout(()=>{a.up=b.up=false;$("m"+ia).classList.remove("up");$("m"+ib).classList.remove("up");MM.busy=false},1000);
+}
+function memEnd(){
+  const d=deck(vak(MM.vid),MM.did),rec=!d.bestMem||MM.moves<d.bestMem;if(rec)d.bestMem=MM.moves;S.xp+=20;markDay();save();
+  const sec=Math.round((Date.now()-MM.start)/1000);
+  app.innerHTML=`<div class="card center" style="margin-top:30px"><div class="muted">Beurten</div><div class="big">${MM.moves}</div>
+  <h3>${rec?"🏆 Nieuw record!":"Alles gevonden! 🎉"}</h3><p class="muted">${sec} seconden · record ${d.bestMem} beurten</p></div>
+  <button class="btn" onclick="startMemory('${MM.vid}','${MM.did}')">Nog een keer</button><button class="btn alt" onclick="backToDeck('${MM.vid}','${MM.did}')">Klaar</button>`;
+}
+
+/* ===== WAAR OF NIET WAAR ===== */
+let TF=null;
+function startTF(vid,did){
+  const v=vak(vid),d=deck(v,did);
+  const items=limit(shuffle(d.cards)).map(c=>{const it={c,v,d,dir:pickDir()},x=qa(it);
+    const others=[...new Set(quizPool(v,d).filter(o=>o.id!==c.id).map(o=>it.dir==="fb"?o.b:o.f).filter(t=>t!==x.a))];
+    const truth=!others.length||Math.random()<.5;return{...it,truth,shown:truth?x.a:shuffle(others)[0]}});
+  TF={vid,did,items,i:0,g:0,streak:0,best:0};tfView();
+}
+function tfView(){
+  if(TF.i>=TF.items.length)return tfEnd();
+  const it=TF.items[TF.i],x=qa(it);
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="backToDeck('${TF.vid}','${TF.did}')">✕ Stoppen</button><span class="muted">${TF.i+1}/${TF.items.length} · 🔥 ${TF.streak}</span></div>
+  <div class="pbar"><i style="width:${100*TF.i/TF.items.length}%"></i></div>
+  <h2 style="margin-top:6px">⚖️ Klopt dit?</h2>
+  <div class="qcard" id="tfc"><div class="w">${esc(x.q)}</div><div class="muted" style="margin:10px 0;font-size:20px">↓</div><div class="w" style="color:#9cc0ff">${esc(it.shown)}</div></div>
+  <div class="tfbtns" id="tfb"><button style="background:#22a35a" onclick="tfA(true)">✅ Waar</button><button style="background:#d64545" onclick="tfA(false)">❌ Niet waar</button></div><div id="fbk"></div>`;
+}
+function tfA(ans){
+  const it=TF.items[TF.i],ok=ans===it.truth,x=qa(it);
+  $("tfb").style.pointerEvents="none";$("tfc").classList.add(ok?"flash-good":"flash-bad");
+  if(ok){TF.g++;TF.streak++;TF.best=Math.max(TF.best,TF.streak);S.xp+=5;setTimeout(()=>{TF.i++;tfView()},550)}
+  else{TF.streak=0;$("fbk").innerHTML=`<div class="fb bad"><b>❌ Helaas</b><p style="margin:6px 0 0">${esc(x.q)} → <b>${esc(x.a)}</b></p></div><button class="btn" onclick="TF.i++;tfView()">Volgende</button>`}
+}
+function tfEnd(){
+  markDay();save();
+  app.innerHTML=`<div class="card center" style="margin-top:30px"><div class="muted">Goed</div><div class="big">${TF.g}/${TF.items.length}</div><h3>Langste reeks: 🔥 ${TF.best}</h3></div>
+  <button class="btn" onclick="startTF('${TF.vid}','${TF.did}')">Nog een keer</button><button class="btn alt" onclick="backToDeck('${TF.vid}','${TF.did}')">Klaar</button>`;
+}
+
+/* ===== HUSSELEN ===== */
+let SC=null;
+function clean(s){return s.replace(/\(.*?\)/g,"").replace(/\s+/g," ").trim()}
+function startScr(vid,did){
+  const v=vak(vid),d=deck(v,did);
+  const items=limit(shuffle(d.cards.map(c=>({c,v,d,dir:pickDir()})).filter(it=>{const a=clean(qa(it).a);return a.length>=2&&a.length<=22})));
+  if(!items.length){alert("Husselen werkt met korte antwoorden (tot 22 tekens). Deze set heeft alleen lange antwoorden.");return}
+  SC={vid,did,items,i:0,g:0};scrSetup();
+}
+function scrSetup(){
+  if(SC.i>=SC.items.length)return scrEnd();
+  const t=clean(qa(SC.items[SC.i]).a);SC.target=t;SC.done=false;
+  SC.slots=[...t].map(ch=>ch===" "?{sp:true}:{p:null});
+  SC.pool=shuffle([...t].filter(ch=>ch!==" ").map(ch=>({ch,used:false})));
+  scrView();
+}
+function scrView(){
+  const x=qa(SC.items[SC.i]);
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="backToDeck('${SC.vid}','${SC.did}')">✕ Stoppen</button><span class="muted">${SC.i+1}/${SC.items.length}</span></div>
+  <div class="pbar"><i style="width:${100*SC.i/SC.items.length}%"></i></div>
+  <h2 style="margin-top:6px">🔤 Zet de letters op volgorde</h2>
+  <div class="qcard"><div class="muted">${x.ql}</div>${im(x.qi,"qimg")}<div class="w">${esc(x.q)}</div></div>
+  <div class="slots">${SC.slots.map((s,i)=>s.sp?`<div class="slot sp"></div>`:`<div class="slot ${s.p!==null?"f":""}" onclick="scrBack(${i})">${s.p!==null?esc(SC.pool[s.p].ch):""}</div>`).join("")}</div>
+  <div class="letters">${SC.pool.map((p,i)=>`<button class="letter ${p.used?"used":""}" onclick="scrPut(${i})">${esc(p.ch)}</button>`).join("")}</div>
+  <div id="fbk">${SC.done?"":`<div class="grid2"><button class="btn alt" onclick="scrHint()">💡 Hint</button><button class="btn alt" onclick="scrFinish(false,true)">Overslaan</button></div>`}</div>`;
+}
+function scrPut(i){if(SC.done||SC.pool[i].used)return;const s=SC.slots.findIndex(x=>!x.sp&&x.p===null);if(s<0)return;SC.slots[s].p=i;SC.pool[i].used=true;scrCheck()}
+function scrBack(i){if(SC.done)return;const s=SC.slots[i];if(s.p===null)return;SC.pool[s.p].used=false;s.p=null;scrView()}
+function scrHint(){
+  const s=SC.slots.findIndex(x=>!x.sp&&x.p===null);if(s<0)return;
+  // eerst foute letters vóór deze plek terugzetten
+  for(let k=0;k<s;k++){const sl=SC.slots[k];if(!sl.sp&&sl.p!==null&&SC.pool[sl.p].ch.toLowerCase()!==SC.target[k].toLowerCase()){SC.pool[sl.p].used=false;sl.p=null;return scrView()}}
+  const need=SC.target[s].toLowerCase(),pi=SC.pool.findIndex(p=>!p.used&&p.ch.toLowerCase()===need);if(pi>=0)scrPut(pi);
+}
+function scrCheck(){
+  if(SC.slots.some(x=>!x.sp&&x.p===null))return scrView();
+  const built=SC.slots.map(x=>x.sp?" ":SC.pool[x.p].ch).join("");
+  scrFinish(built.toLowerCase()===SC.target.toLowerCase());
+}
+function scrFinish(ok,skip){
+  SC.done=true;scrView();if(ok){SC.g++;S.xp+=10}
+  $("fbk").innerHTML=`<div class="fb ${ok?"good":"bad"}"><b>${ok?"✅ Goed!":skip?"Overgeslagen":"❌ Niet helemaal"}</b>${ok?"":`<p style="margin:6px 0 0">Het antwoord is: <b>${esc(SC.target)}</b></p>`}</div><button class="btn" onclick="SC.i++;scrSetup()">Volgende</button>`;
+}
+function scrEnd(){markDay();save();
+  app.innerHTML=`<div class="card center" style="margin-top:30px"><div class="muted">Goed</div><div class="big">${SC.g}/${SC.items.length}</div><h3>${SC.g===SC.items.length?"Alles goed! 🏆":"Lekker bezig! 👍"}</h3></div>
+  <button class="btn" onclick="startScr('${SC.vid}','${SC.did}')">Nog een keer</button><button class="btn alt" onclick="backToDeck('${SC.vid}','${SC.did}')">Klaar</button>`;
+}
+
+/* ===== SNELRACE ===== */
+let SP=null;
+function startSpeed(vid,did){
+  SP={vid,did,end:Date.now()+60000,score:0,wrong:0};
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="backToDeck('${vid}','${did}')">✕ Stoppen</button></div>
+  <h1>⏱️ Snelrace</h1><div class="card"><p>Je hebt <b>60 seconden</b>. Beantwoord zoveel mogelijk meerkeuzevragen goed.</p><p class="muted">Een fout kost je 2 seconden.</p></div>
+  <button class="btn" onclick="SP.end=Date.now()+60000;spNext();window._tick=setInterval(spTick,200)">Start!</button>`;
+}
+function spTick(){const left=SP.end-Date.now();if(left<=0){clearInterval(window._tick);return spEnd()}const b=$("spt");if(b)b.style.width=(100*left/60000)+"%";const s=$("sps");if(s)s.textContent=Math.ceil(left/1000)+"s"}
+function spNext(){
+  const v=vak(SP.vid),d=deck(v,SP.did),c=d.cards[Math.floor(Math.random()*d.cards.length)];
+  SP.it={c,v,d,dir:pickDir()};SP.opts=optsFor(SP.it);const x=qa(SP.it);
+  app.innerHTML=`<div class="row between"><b style="font-size:22px">⭐ ${SP.score}</b><span class="muted" id="sps"></span></div>
+  <div class="timer"><i id="spt" style="width:${100*(SP.end-Date.now())/60000}%"></i></div>
+  <div class="qcard" id="spc"><div class="w">${esc(x.q)}</div></div>
+  ${SP.opts.map((o,i)=>`<button class="opt" onclick="spA(${i},this)">${esc(o)}</button>`).join("")}`;
+  spTick();
+}
+function spA(i,el){
+  if(SP.lock)return;SP.lock=true;const ok=SP.opts[i]===qa(SP.it).a;
+  el.classList.add(ok?"good":"bad");if(ok)SP.score++;else{SP.wrong++;SP.end-=2000}
+  setTimeout(()=>{SP.lock=false;if(SP.end>Date.now())spNext()},ok?180:450);
+}
+function spEnd(){
+  const d=deck(vak(SP.vid),SP.did),rec=!d.bestSpeed||SP.score>d.bestSpeed;if(rec)d.bestSpeed=SP.score;S.xp+=SP.score*5;markDay();save();
+  app.innerHTML=`<div class="card center" style="margin-top:30px"><div class="muted">Score</div><div class="big">${SP.score}</div>
+  <h3>${rec?"🏆 Nieuw record!":"Tijd is op! ⏱️"}</h3><p class="muted">${SP.wrong} fout · record ${d.bestSpeed}</p></div>
+  <button class="btn" onclick="startSpeed('${SP.vid}','${SP.did}')">Nog een keer</button><button class="btn alt" onclick="backToDeck('${SP.vid}','${SP.did}')">Klaar</button>`;
+}
+
+/* ===== OEFENTOETS ===== */
+let T=null;
+function startToets(vid,did){
+  const v=vak(vid),d=deck(v,did),canQ=quizPool(v,d).length>=4;
+  const items=(S.count?shuffle(d.cards).slice(0,S.count):shuffle(d.cards)).map(c=>{const it={c,v,d,dir:pickDir()};return{...it,opts:canQ&&Math.random()<.6?optsFor(it):null,ans:null,ok:false}});
+  T={vid,did,items,i:0};
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="backToDeck('${vid}','${did}')">‹ Terug</button></div>
+  <h1>📝 Oefentoets</h1><div class="card"><p><b>${items.length} vragen</b> uit ‘${esc(d.name)}’, door elkaar meerkeuze en open vragen.</p>
+  <p class="muted">Je ziet pas aan het eind wat goed was en je krijgt een cijfer. Net als een echte toets.</p></div>
+  <button class="btn" onclick="toetsQ()">Begin</button>`;
+}
+function toetsQ(){
+  if(T.i>=T.items.length)return toetsEnd();
+  const it=T.items[T.i],x=qa(it);
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="if(confirm('Toets stoppen?'))backToDeck('${T.vid}','${T.did}')">✕ Stoppen</button><span class="muted">Vraag ${T.i+1} van ${T.items.length}</span></div>
+  <div class="pbar"><i style="width:${100*T.i/T.items.length}%"></i></div>
+  <div class="qcard"><div class="muted">${x.ql}</div>${im(x.qi,"qimg")}<div class="w">${esc(x.q)}</div></div>
+  ${it.opts?it.opts.map((o,i)=>`<button class="opt" onclick="toetsA(${i})">${esc(o)}</button>`).join(""):
+  `<input id="ta" placeholder="Typ het antwoord…" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')toetsA()"><button class="btn" onclick="toetsA()">Volgende</button>`}`;
+  if(!it.opts)setTimeout(()=>$("ta")&&$("ta").focus(),50);
+}
+function toetsA(i){
+  const it=T.items[T.i],x=qa(it);
+  if(it.opts){it.ans=it.opts[i];it.ok=it.ans===x.a}else{const val=$("ta").value;it.ans=val.trim()||"(leeg)";it.ok=isRight(val,x.a)}
+  T.i++;window.scrollTo(0,0);toetsQ();
+}
+function toetsEnd(){
+  const n=T.items.length,g=T.items.filter(x=>x.ok).length,t=dayNum(),c=cijfer(g,n);
+  T.items.forEach(it=>{const k=it.c;k.seen++;if(it.ok){k.box=Math.min(6,k.box+1);k.due=t+INT[k.box];k.right++;S.xp+=10}else{k.box=0;k.due=t}});
+  const d=deck(vak(T.vid),T.did);d.toetsen=(d.toetsen||[]).concat([c]).slice(-10);markDay();save();
+  const wrong=T.items.filter(x=>!x.ok);
+  app.innerHTML=`<div class="card center" style="margin-top:20px"><div class="muted">Je cijfer</div>
+  <div class="big" style="color:${c>=5.5?"var(--good)":"var(--bad)"}">${c.toFixed(1)}</div>
+  <h3>${c>=8?"Top! 🏆":c>=5.5?"Voldoende! 👍":"Nog even oefenen 🔁"}</h3><p class="muted">${g} van de ${n} goed${d.toetsen.length>1?` · vorige keer ${d.toetsen[d.toetsen.length-2].toFixed(1)}`:""}</p></div>
+  ${wrong.length?`<h2>Dit ging fout</h2><div class="card" style="padding:6px 14px">${wrong.map(it=>{const x=qa(it);return`<div class="kaart" style="flex-direction:column;gap:2px"><b>${esc(x.q)}</b><span style="color:#ff9b9b">✗ ${esc(it.ans)}</span><span style="color:#7ee6a8">✓ ${esc(x.a)}</span></div>`}).join("")}</div>
+  <button class="btn" onclick="S.which='due';startStudy('flash',{scope:'deck',vid:'${T.vid}',did:'${T.did}'})">Oefen de foute kaarten</button>`:""}
+  <button class="btn alt" onclick="backToDeck('${T.vid}','${T.did}')">Klaar</button>`;
+}
+
+/* ===== LEESLIJST ===== */
+let HIDE=false;
+function leesLijst(vid,did){
+  const d=deck(vak(vid),did);
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="backToDeck('${vid}','${did}')">‹ Terug</button></div>
+  <h1>👀 Leeslijst</h1><p class="muted">Lees alles rustig door. Zet ‘Verberg antwoorden’ aan en tik op een regel om jezelf te overhoren.</p>
+  <div class="seg"><button class="${HIDE?"":"on"}" onclick="HIDE=false;leesLijst('${vid}','${did}')">Alles zien</button><button class="${HIDE?"on":""}" onclick="HIDE=true;leesLijst('${vid}','${did}')">Verberg antwoorden</button></div>
+  <div class="card" style="padding:6px 14px">${d.cards.map(c=>`<div class="kaart" onclick="this.querySelector('.b').style.filter='none'">${c.img?`<img class="thumb" src="${c.img}">`:""}<div class="f">${esc(c.f)}</div><div class="b" style="${HIDE?"filter:blur(7px);cursor:pointer":""}">${esc(c.b)}</div></div>`).join("")}</div>`;
+}
+
+/* ===== KAARTENMAKER ===== */
+let MK={img:null};
+function vMaker(){
+  const v=vak(R.vid),d=deck(v,R.did);if(!d)return go({v:"home"});
+  MK={img:null,side:"f"};
+  const recent=d.cards.slice(-5).reverse();
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="backToDeck('${v.id}','${d.id}')">‹ Klaar</button><span class="muted">${v.ico} ${esc(d.name)}</span></div>
+  <h2 style="margin-top:4px">✍️ Kaarten maken</h2><p class="muted" id="mkcount">${d.cards.length} kaart${d.cards.length===1?"":"en"} in deze set</p>
+  <div class="stage"><div class="flip enter" id="mk"><div class="in">
+    <div class="side front" style="background:linear-gradient(145deg,${v.color},${shade(v.color)})"><span class="lbl">Voorkant · vraag of woord</span>
+      <div id="mkimgprev"></div><textarea class="cardtxt" id="mkf" placeholder="Schrijf hier de vraag of het woord…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();mkFlip()}"></textarea></div>
+    <div class="side back"><span class="lbl">Achterkant · antwoord</span>
+      <textarea class="cardtxt" id="mkb" placeholder="Schrijf hier het antwoord…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();mkSave()}"></textarea></div>
+  </div></div></div>
+  <div id="mkbtns">${mkBtns()}</div>
+  <input type="file" id="mkfile" accept="image/*" style="display:none" onchange="mkPhoto(this)">
+  ${recent.length?`<h2>Laatst gemaakt</h2><div class="card" style="padding:6px 14px">${recent.map(c=>`<div class="kaart">${c.img?`<img class="thumb" src="${c.img}">`:""}<div class="f">${esc(c.f)}</div><div class="b">${esc(c.b)}</div><button onclick="cardForm('${v.id}','${d.id}','${c.id}')">✏️</button></div>`).join("")}</div>`:""}
+  <button class="btn alt" onclick="bulkForm('${v.id}','${d.id}')">📋 Of plak een hele lijst tegelijk</button>`;
+  setTimeout(()=>$("mkf")&&$("mkf").focus(),350);
+}
+function mkBtns(){
+  return MK.side==="f"?`<div class="grid2"><button class="btn alt" onclick="$('mkfile').click()">📷 ${MK.img?"Andere foto":"Foto erbij"}</button><button class="btn" onclick="mkFlip()">Draai om ↻</button></div>`
+  :`<div class="grid2"><button class="btn alt" onclick="mkFlip(true)">↺ Voorkant</button><button class="btn" style="background:#22a35a" onclick="mkSave()">✓ Opslaan</button></div>`;
+}
+function mkFlip(back){
+  const fl=$("mk");
+  if(back){MK.side="f";fl.classList.remove("on");$("mkbtns").innerHTML=mkBtns();setTimeout(()=>$("mkf").focus(),400);return}
+  if(!$("mkf").value.trim()&&!MK.img){$("mkf").focus();fl.classList.remove("enter");void fl.offsetWidth;fl.classList.add("wiggle");return}
+  MK.side="b";fl.classList.remove("enter");void fl.offsetWidth;fl.classList.add("on","lift");setTimeout(()=>fl.classList.remove("lift"),820);
+  $("mkbtns").innerHTML=mkBtns();setTimeout(()=>$("mkb").focus(),450);
+}
+function mkSave(){
+  const f=$("mkf").value.trim()||"(foto)",b=$("mkb").value.trim();if(!b){$("mkb").focus();return}
+  const d=deck(vak(R.vid),R.did),c=mkCard(f,b);if(MK.img)c.img=MK.img;d.cards.push(c);save();
+  const fl=$("mk");fl.classList.add("fly-r");
+  const t=document.createElement("div");t.className="toast";t.textContent="✅ Kaart opgeslagen";document.body.appendChild(t);setTimeout(()=>t.remove(),1700);
+  setTimeout(vMaker,380);
+}
+function mkPhoto(inp){
+  const file=inp.files[0];if(!file)return;const r=new FileReader();
+  r.onload=e=>{const img=new Image();img.onload=()=>{const max=520,sc=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement("canvas");c.width=img.width*sc;c.height=img.height*sc;c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    MK.img=c.toDataURL("image/jpeg",.72);$("mkimgprev").innerHTML=im(MK.img);$("mkbtns").innerHTML=mkBtns()};img.src=e.target.result};
+  r.readAsDataURL(file);inp.value="";
+}
+
+/* ===== BEGRIJPEND LEZEN ===== */
+function vLezen(){
+  const v=vak(R.vid);
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="go({v:'vak',vid:'${v.id}'})">‹ ${esc(v.name)}</button></div>
+  <h1>📖 Begrijpend lezen</h1><p class="muted">Lees een tekst en beantwoord de vragen. Je krijgt bij elke vraag uitleg.</p>
+  <div class="seg"><button class="${R.tab==="teksten"?"on":""}" onclick="go({v:'lezen',vid:'${v.id}',tab:'teksten'})">📄 Teksten</button><button class="${R.tab==="leerstof"?"on":""}" onclick="go({v:'lezen',vid:'${v.id}',tab:'leerstof'})">💡 Leerstof</button></div>
+  ${R.tab==="teksten"?TEXTS.map(t=>{const b=S.lees[t.id];return`<div class="item" onclick="go({v:'tekst',vid:'${v.id}',id:'${t.id}'})"><div class="ico">${t.ico}</div><div class="grow"><b>${esc(t.title)}</b><br>
+    <span class="tag">${t.soort}</span><span class="tag">${t.niveau}</span>${b!==undefined?`<span class="tag ${b===t.qs.length?"green":"blue"}">${b}/${t.qs.length}</span>`:""}</div></div>`}).join(""):
+    LEARN.map(l=>`<details class="learn"><summary>${l.t}</summary><div class="body">${l.h}</div></details>`).join("")}`;
+}
+function textHtml(t){return`<h3>${esc(t.title)}</h3>`+t.paras.map((p,i)=>`<div class="para"><div class="nr">${i+1}</div><div>${esc(p)}</div></div>`).join("")}
+function vTekst(){
+  const t=TEXTS.find(x=>x.id===R.id);
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="go({v:'lezen',vid:'${R.vid}',tab:'teksten'})">‹ Teksten</button><span class="tag">${t.soort}</span></div>
+  <h1>${t.ico} ${esc(t.title)}</h1>
+  <div class="tipbox">👀 <b>Leestip:</b> lees eerst de titel, de eerste en de laatste alinea. Lees daarna de hele tekst rustig door.</div>
+  <div class="card">${textHtml(t)}</div>
+  <button class="btn" onclick="startLees('${t.id}')">Ik heb gelezen – start de ${t.qs.length} vragen</button>`;
+}
+let LQ=null;
+function startLees(id){const t=TEXTS.find(x=>x.id===id);LQ={t,i:0,g:0,items:t.qs.map(q=>({...q,order:shuffle(q.o.map((_,i)=>i))}))};window.scrollTo(0,0);lqView()}
+function lqView(){
+  if(LQ.i>=LQ.items.length)return lqEnd();
+  const q=LQ.items[LQ.i],sk=SKILLS[q.s];
+  app.innerHTML=`<div class="topbar"><button class="x" onclick="go({v:'tekst',vid:'${R.vid}',id:'${LQ.t.id}'})">✕ Stoppen</button><span class="muted">Vraag ${LQ.i+1} van ${LQ.items.length}</span></div>
+  <div class="pbar"><i style="width:${100*LQ.i/LQ.items.length}%"></i></div>
+  <div class="row between" style="margin:10px 0 4px"><span class="tag blue">${sk.i} ${sk.n}</span><span><button class="btn small alt" onclick="lqText()">📄 Tekst</button> <button class="btn small alt" onclick="$('tip').style.display='block'">💡 Tip</button></span></div>
+  <div class="tipbox" id="tip" style="display:none">💡 ${sk.tip}</div>
+  <p style="font-size:18px;font-weight:700;margin:8px 0 14px">${esc(q.q)}</p>
+  ${q.order.map(oi=>`<button class="opt" data-i="${oi}" onclick="lqA(${oi})">${esc(q.o[oi])}</button>`).join("")}<div id="fbk"></div>`;
+}
+function lqText(){sheet(`<div class="topbar"><b>📄 Tekst</b><button class="x" onclick="closeSheet()">Sluiten ✕</button></div>${textHtml(LQ.t)}<button class="btn" onclick="closeSheet()">Terug naar de vraag</button>`)}
+function lqA(oi){
+  if(LQ.lock)return;LQ.lock=true;const q=LQ.items[LQ.i],ok=oi===q.a;if(ok){LQ.g++;S.xp+=10}
+  document.querySelectorAll(".opt").forEach(b=>{const i=+b.dataset.i;b.disabled=true;if(i===q.a)b.classList.add("good");else if(i===oi)b.classList.add("bad")});
+  $("fbk").innerHTML=`<div class="fb ${ok?"good":"bad"}"><b>${ok?"✅ Goed! +10":"❌ Niet goed"}</b><p style="margin:6px 0 0">${esc(q.u)}</p></div><button class="btn" onclick="LQ.lock=false;LQ.i++;window.scrollTo(0,0);lqView()">${LQ.i+1<LQ.items.length?"Volgende vraag":"Bekijk resultaat"}</button>`;
+  $("fbk").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function lqEnd(){
+  const n=LQ.items.length;S.lees[LQ.t.id]=Math.max(S.lees[LQ.t.id]||0,LQ.g);markDay();save();
+  app.innerHTML=`<div class="card center" style="margin-top:30px"><div class="muted">${esc(LQ.t.title)}</div><div class="big">${LQ.g}/${n}</div>
+  <h3>${LQ.g===n?"Perfect! 🏆":LQ.g/n>=.7?"Goed gelezen! 💪":"Lees de uitleg nog eens rustig door 🔁"}</h3></div>
+  <button class="btn" onclick="startLees('${LQ.t.id}')">Nog een keer</button><button class="btn alt" onclick="go({v:'lezen',vid:'${R.vid}',tab:'teksten'})">Andere tekst</button>`;
+}
+
+render();
+if("serviceWorker" in navigator&&location.protocol==="https:"){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})})}
+</script>
+</body>
+</html>
